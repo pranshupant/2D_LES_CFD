@@ -17,6 +17,7 @@ def initialize():
     for i in files:
         if isfloat(i):
             shutil.rmtree(i)
+    shutil.rmtree('Constant')
     try:
         os.makedirs('Constant/')
         os.makedirs('0/')
@@ -67,7 +68,7 @@ def initialize():
 
     T=np.ones([nx+1,ny+1])*Temperature
     write_scalar('0/T.txt',T)
-initialize()
+#initialize()
 
 
 
