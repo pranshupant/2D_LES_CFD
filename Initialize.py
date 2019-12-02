@@ -18,8 +18,8 @@ def initialize():
     for i in files:
         if isfloat(i):
             shutil.rmtree(i)
+    shutil.rmtree('Constant')
     try:
-        shutil.rmtree('Constant')
         os.makedirs('Constant/')
         os.makedirs('0/')
     except:
