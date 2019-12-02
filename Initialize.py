@@ -4,7 +4,7 @@ from numba import jit
 import inspect
 import json
 from functions import *
-#blah blah blah
+
 def isfloat(value):
   try:
     float(value)
@@ -18,11 +18,7 @@ def initialize():
     for i in files:
         if isfloat(i):
             shutil.rmtree(i)
-    
-    try:
-        shutil.rmtree('Constant')
-    except:
-        print('whatever')
+    shutil.rmtree('Constant')
     try:
         os.makedirs('Constant/')
         os.makedirs('0/')
