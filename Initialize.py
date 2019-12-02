@@ -22,7 +22,7 @@ def initialize():
     try:
         shutil.rmtree('Constant')
     except:
-        print('whatever')
+        print('whatever this is')
     try:
         os.makedirs('Constant/')
         os.makedirs('0/')
