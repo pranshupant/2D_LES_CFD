@@ -12,6 +12,7 @@ def isfloat(value):
   except ValueError:
     return False
 # Hello its Me!
+# Hello this is papa
 def initialize():
     files=os.listdir()
     for i in files:
