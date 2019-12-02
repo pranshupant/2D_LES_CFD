@@ -83,13 +83,13 @@ def read_scalar(filein,ch=0):
 
 def write_all_scalar(P,T,U,V,t='trash'):
     try:
-        path='%s/'%t
+        path='%.3f/'%t
         os.makedirs(path)
         write_scalar(path+'P.txt',P)
         write_scalar(path+'U.txt',U)
         write_scalar(path+'V.txt',V)
         write_scalar(path+'T.txt',T)
-        print('## WRITTEN : time=%s'%t)
+        print('## WRITTEN : time=%.3f'%t)
     except:
         print("Failed to write !")
 
