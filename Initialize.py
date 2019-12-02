@@ -1,11 +1,22 @@
-import numpy as np,sys,time,os
+import numpy as np,sys,time,os,shutil
 import numba 
 from numba import jit 
 import inspect
 import json
 from functions import *
 
+def isfloat(value):
+  try:
+    float(value)
+    return True
+  except ValueError:
+    return False
+
 def initialize():
+    files=os.listdir()
+    for i in files:
+        if isfloat(i):
+            shutil.rmtree(i)
     try:
         os.makedirs('Constant/')
         os.makedirs('0/')
@@ -56,7 +67,7 @@ def initialize():
 
     T=np.ones([nx+1,ny+1])*Temperature
     write_scalar('0/T.txt',T)
-#initialize()
+initialize()
 
 
 
