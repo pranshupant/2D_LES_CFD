@@ -130,11 +130,8 @@ def Diff(u, x, y, i, j):
 # @jit(nopython=True)
 def predictor(x, y, u, v, T, dt, T_ref, rho, g, nu, beta):
     # Main Predictor Loop
-    nx_u = T.shape[0]
-    ny_u = T.shape[1]
-
-    nx_v = T.shape[0]
-    ny_v = T.shape[1]
+    nx = T.shape[0]
+    ny = T.shape[1]
 
     print(v.shape[0], v.shape[1])
 
@@ -147,13 +144,10 @@ def predictor(x, y, u, v, T, dt, T_ref, rho, g, nu, beta):
     #print(nx, ny)
 
 
-    for i in range(1, nx_u-2):
-        for j in range(1, ny_u-2):
+    for i in range(1, nx-2):
+        for j in range(1, ny-2):
             #print(i,j)
             u_[i][j] = u[i][j] + dt*(nu*(Diff(u, x, y, i, j)) - Adv(u, v, x, y, i, j, 0))
-
-    for i in range(1, nx_v-2):
-        for j in range(1, ny_v-2):
 
             v_[i][j] = v[i][j] + dt*(nu*(Diff(v, x, y, i, j)) - Adv(u, v, x, y, i, j, 1) + rho*g*beta*(0.5*(T[i][j-1] + T[i][j+1])-T_ref)) #Add Bousinessq Terms  
     
