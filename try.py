@@ -1,6 +1,7 @@
 import numpy as np 
 from numba import jit
 from Initialize import *
+from contour import *
 import copy
 
 # @jit(nopython=True)
@@ -149,7 +150,7 @@ def predictor(x, y, u, v, T, dt, T_ref, rho, g, nu, beta):
             #print(i,j)
             u_[i][j] = u[i][j] + dt*(nu*(Diff(u, x, y, i, j)) - Adv(u, v, x, y, i, j, 0))
 
-            v_[i][j] = v[i][j] + dt*(nu*(Diff(v, x, y, i, j)) - Adv(u, v, x, y, i, j, 1) + rho*g*beta*(0.5*(T[i][j-1] + T[i][j+1])-T_ref)) #Add Bousinessq Terms  
+            v_[i][j] = v[i][j] + dt*(nu*(Diff(v, x, y, i, j)) - Adv(u, v, x, y, i, j, 1))#+ rho*g*beta*(0.5*(T[i][j-1] + T[i][j+1])-T_ref)) #Add Bousinessq Terms  
     
     return u_, v_
 
@@ -179,6 +180,39 @@ def corrector(x, y, u, v, p, dt, rho):
     
     return u_, v_
 
+def BC_update(u, v, p):
+    nx = p.shape[0]-1
+    ny = p.shape[1]-1
+    #inlet
+    #v[0,:] = v[1,:]
+    v[0,:] = copy.deepcopy(v[1,:])
+
+    p[0,:] = copy.deepcopy(p[1,:])
+
+    #bottom
+    u[:,0] =  copy.deepcopy(-u[:,1])
+
+    v[:,0] = 0.
+
+    p[:,0] = copy.deepcopy(p[:,1])
+
+    #outlet
+    u[nx-1,:] = copy.deepcopy(u[nx-2,:])
+    u[nx,:] = copy.deepcopy(u[nx-1,:])
+
+    v[nx,:] = copy.deepcopy(v[nx-1,:])
+
+    #top
+    u[:,ny] =  copy.deepcopy(u[:,ny-1])
+
+    v[:,ny-1] =  copy.deepcopy(v[:,ny-2])
+    v[:,ny-2] =  copy.deepcopy(v[:,ny-1])
+
+    p[:,ny] = copy.deepcopy(p[:,ny-1])
+    return u, v, p
+
+
+
 #@numba.jit(nopython=True, parallel=True)
 def main():
     rho = 1.225
@@ -187,7 +221,7 @@ def main():
     nu = 1.569e-5
     alpha_T = 2.239e-5
     alpha_pollutant = 2.239e-5
-    total_t = 1
+    total_t = 0.01
     t = 0
     dt = 0.001
     g = 10
@@ -208,17 +242,28 @@ def main():
         #print(p_new)
         u_new, v_new = corrector(x, y, u_, v_, p_new, dt, rho)
         #print(u_new)
-        T_new = transport(T,u,v,dt,x,y,alpha_T)
+        #T_new = transport(T,u,v,dt,x,y,alpha_T)
         #phi_new = transport(phi,u,v,dt,x,y,alpha_pollutant) #Pollutant Transport
+
+        u_new, v_new, p_new = copy.deepcopy(BC_update(u_new, v_new, p_new))
         
         u = copy.deepcopy(u_new)
         v = copy.deepcopy(v_new)
+
+        P = copy.deepcopy(p_new)
+
+
 
         t += dt
         write_all_scalar(P, T, u_new, v_new, t)
         
         if t >= total_t:
             running = False
+    Contour('U', P='yes')
+    Contour('V')
+    Contour('P')
+    #Contour('T')
+
 
 if __name__ == '__main__':
     main()

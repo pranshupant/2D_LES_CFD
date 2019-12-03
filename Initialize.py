@@ -21,6 +21,8 @@ def initialize():
     
     try:
         shutil.rmtree('Constant')
+        shutil.rmtree('Results')
+        
     except:
         print('whatever this is')
     try:
@@ -64,7 +66,7 @@ def initialize():
 
     U_in=np.linspace(0,1,ny+1)
     U=np.zeros([nx+1,ny+1])
-    U[0,:]=U_in
+    U[0,:]= 1.#U_in
     # print(U)
     write_scalar('0/U.txt',U)
 

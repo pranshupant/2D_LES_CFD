@@ -89,6 +89,11 @@ def write_all_scalar(P,T,U,V,t='trash'):
         write_scalar(path+'U.txt',U)
         write_scalar(path+'V.txt',V)
         write_scalar(path+'T.txt',T)
+
+        np.savetxt(path+'P_.txt',P, delimiter='\t',fmt='%.3f')
+        np.savetxt(path+'U_.txt',U, delimiter='\t',fmt='%.3f')
+        np.savetxt(path+'V_.txt',V, delimiter='\t',fmt='%.3f')
+        np.savetxt(path+'T_.txt',T, delimiter='\t',fmt='%.3f')
         print('## WRITTEN : time=%.3f'%t)
     except:
         print("Failed to write !")
