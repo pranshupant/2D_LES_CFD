@@ -1,6 +1,7 @@
 import numpy as np 
 from numba import jit
 from Initialize import *
+import copy
 
 # @jit(nopython=True)
 def transport(T,u,v,dt,dx,dy,alpha):
@@ -67,7 +68,7 @@ def poisson(P,u,v,dt,dx,dy,rho):
     err = 1
     k = 0
     while (err>Con):
-        temp = P
+        temp = copy.deepcopy(P)
         k+=1
         for i in range(1,nx-1):
             for j in range(1,ny-1):
@@ -129,20 +130,31 @@ def Diff(u, x, y, i, j):
 # @jit(nopython=True)
 def predictor(x, y, u, v, T, dt, T_ref, rho, g, nu, beta):
     # Main Predictor Loop
-    nx = T.shape[0]
-    ny = T.shape[1]
+    nx_u = T.shape[0]
+    ny_u = T.shape[1]
+
+    nx_v = T.shape[0]
+    ny_v = T.shape[1]
+
+    print(v.shape[0], v.shape[1])
 
     u_ = np.zeros((u.shape[0], u.shape[1]))
     v_ = np.zeros((v.shape[0], v.shape[1]))
-    
-    print('*******')
-    print(nx, ny)
+
+    u_ = copy.deepcopy(u)
+    v_ = copy.deepcopy(v)
+    #print('*******')
+    #print(nx, ny)
 
 
-    for i in range(1, nx-2):
-        for j in range(1, nx-2):
-            print(i,j)
+    for i in range(1, nx_u-2):
+        for j in range(1, ny_u-2):
+            #print(i,j)
             u_[i][j] = u[i][j] + dt*(nu*(Diff(u, x, y, i, j)) - Adv(u, v, x, y, i, j, 0))
+
+    for i in range(1, nx_v-2):
+        for j in range(1, ny_v-2):
+
             v_[i][j] = v[i][j] + dt*(nu*(Diff(v, x, y, i, j)) - Adv(u, v, x, y, i, j, 1) + rho*g*beta*(0.5*(T[i][j-1] + T[i][j+1])-T_ref)) #Add Bousinessq Terms  
     
     return u_, v_
@@ -156,6 +168,9 @@ def corrector(x, y, u, v, p, dt, rho):
 
     u_ = np.zeros((u.shape[0], u.shape[1]))
     v_ = np.zeros((v.shape[0], v.shape[1]))
+
+    u_ = copy.deepcopy(u)
+    v_ = copy.deepcopy(v)
 
     for i in range(1, nx-2):
         for j in range(1, nx-2):
@@ -180,24 +195,30 @@ def main():
     alpha_pollutant = 2.239e-5
     total_t = 1
     t = 0
-    dt = 0.1
+    dt = 0.001
     g = 10
 
     initialize()
 
     x,y = read_delta(1)
     P, T, u, v = read_all_scalar(0)
-    print(T) 
-    print(T.shape[0], T.shape[1])
+    print(P) 
+    #print(T.shape[0], T.shape[1])
 
     running = True
     while running:
         
         u_, v_ = predictor(x, y, u, v, T, dt, T_ref, rho, g, nu, beta)
+        #print(u_)
         p_new = poisson(P,u_,v_,dt,x,y,rho)
+        #print(p_new)
         u_new, v_new = corrector(x, y, u_, v_, p_new, dt, rho)
+        #print(u_new)
         T_new = transport(T,u,v,dt,x,y,alpha_T)
         #phi_new = transport(phi,u,v,dt,x,y,alpha_pollutant) #Pollutant Transport
+        
+        u = copy.deepcopy(u_new)
+        v = copy.deepcopy(v_new)
 
         t += dt
         write_all_scalar(P, T, u_new, v_new, t)
