@@ -30,8 +30,8 @@ def initialize():
         print('Running')
     Cons='Constant/'
     Rho=1000
-    N=5
-    M=5
+    N=10
+    M=10
     nx=N+1
     ny=M+1
     xmax=1
@@ -59,16 +59,16 @@ def initialize():
     write_scalar(Cons+'Dx.txt',dx)
     write_scalar(Cons+'Dy.txt',dy)
 
-    P=np.ones([nx+1,ny+1])*atm
+    P=np.zeros([nx+1,ny+1])*atm
     write_scalar('0/P.txt',P)
 
     U_in=np.linspace(0,1,ny+1)
-    U=np.zeros([nx,ny+1])
+    U=np.zeros([nx+1,ny+1])
     U[0,:]=U_in
     # print(U)
     write_scalar('0/U.txt',U)
 
-    V=np.zeros([nx+1,ny])
+    V=np.zeros([nx+1,ny+1])
     write_scalar('0/V.txt',V)
 
     T=np.ones([nx+1,ny+1])*Temperature

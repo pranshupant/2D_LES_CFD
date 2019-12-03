@@ -83,7 +83,7 @@ def read_scalar(filein,ch=0):
 
 def write_all_scalar(P,T,U,V,t='trash'):
     try:
-        path='%.3f/'%t
+        path='Results/%.3f/'%t
         os.makedirs(path)
         write_scalar(path+'P.txt',P)
         write_scalar(path+'U.txt',U)
