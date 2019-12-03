@@ -64,7 +64,7 @@ def initialize():
 
     U_in=np.linspace(0,1,ny+1)
     U=np.zeros([nx,ny+1])
-    U[0,:]=U_in
+    U[0,:]= 5#U_in
     # print(U)
     write_scalar('0/U.txt',U)
 
