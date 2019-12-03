@@ -58,6 +58,10 @@ def initialize():
     # Points_read=read_points(Cons+'Points.txt')
 
     dx,dy=deltas_write(Points)
+    #print(dx.shape)
+    dx=np.ones([N+1,M+1])*0.1
+    dy=np.ones([N+1,M+1])*0.1
+    
     write_scalar(Cons+'Dx.txt',dx)
     write_scalar(Cons+'Dy.txt',dy)
 
@@ -75,7 +79,7 @@ def initialize():
 
     T=np.ones([nx+1,ny+1])*Temperature
     write_scalar('0/T.txt',T)
-#initialize()
+initialize()
 
 
 

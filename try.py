@@ -206,7 +206,7 @@ def BC_update(u, v, p):
     u[:,ny] =  copy.deepcopy(u[:,ny-1])
 
     v[:,ny-1] =  copy.deepcopy(v[:,ny-2])
-    v[:,ny-2] =  copy.deepcopy(v[:,ny-1])
+    v[:,ny] =  copy.deepcopy(v[:,ny-1])
 
     p[:,ny] = copy.deepcopy(p[:,ny-1])
     return u, v, p
@@ -221,7 +221,7 @@ def main():
     nu = 1.569e-5
     alpha_T = 2.239e-5
     alpha_pollutant = 2.239e-5
-    total_t = 0.01
+    total_t = 0.1
     t = 0
     dt = 0.001
     g = 10
