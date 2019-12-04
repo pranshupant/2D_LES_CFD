@@ -71,13 +71,14 @@ def poisson(P,u,v,dt,dx,dy,rho):
     while (err>Con):
         temp = copy.deepcopy(P)
         k+=1
-        for i in range(1,nx-1):
-            for j in range(1,ny-1):
+        for i in range(1,nx):
+            for j in range(1,ny):
                 frac_x,frac_y,frac_rx,frac_ry=Frac(dx,dy,i,j)
                 rhs = RHS(u,v,dx,dy,i,j,dt,rho)
                 
                 P[(i,j)]=(frac_x+frac_y)**(-1)*(frac_rx*(P[(i+1,j)]+P[(i-1,j)])+frac_ry*(P[(i,j+1)]+P[(i,j-1)])-rhs)
-        if k == 100000:
+        if k == 10000000:# Look into this
+            print('not converged', err)
             break
         err = np.max(np.abs(P-temp))
     return P
