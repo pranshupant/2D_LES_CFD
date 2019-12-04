@@ -73,6 +73,8 @@ def Contour(Scalar_name,time=-1,show='yes',P='no'): #scalar must be string of wh
         Scalar=copy.deepcopy(averaging(Scalar,1))
     elif Scalar_name=='V':
         Scalar=copy.deepcopy(averaging(Scalar,0))
+    else:
+        Scalar = copy.deepcopy(Scalar[1:-1,1:-1])
     
     plotting(Points,Scalar,Scalar_name,show,P)
 
