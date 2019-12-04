@@ -83,7 +83,7 @@ def read_scalar(filein,ch=0):
 
 def write_all_scalar(P,T,U,V,t='trash'):
     try:
-        path='Results/%.3f/'%t
+        path='Results/%.3e/'%t
         os.makedirs(path)
         write_scalar(path+'P.txt',P)
         write_scalar(path+'U.txt',U)
@@ -94,7 +94,7 @@ def write_all_scalar(P,T,U,V,t='trash'):
         np.savetxt(path+'U_.txt',U, delimiter='\t',fmt='%.3f')
         np.savetxt(path+'V_.txt',V, delimiter='\t',fmt='%.3f')
         np.savetxt(path+'T_.txt',T, delimiter='\t',fmt='%.3f')
-        print('## WRITTEN : time=%.3f'%t)
+        print('## WRITTEN : time=%.3e'%t)
     except:
         print("Failed to write !")
 

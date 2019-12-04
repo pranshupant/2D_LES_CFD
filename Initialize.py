@@ -32,8 +32,8 @@ def initialize():
         print('Running')
     Cons='Constant/'
     Rho=1000
-    N=10
-    M=10
+    N=20
+    M=20
     nx=N+1
     ny=M+1
     xmax=1

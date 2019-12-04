@@ -59,10 +59,10 @@ def poisson(P,u,v,dt,dx,dy,rho):
         return frac_x, frac_y, frac_rx, frac_ry
 
     def RHS(u,v,dx,dy,i,j,dt,rho):
-        U_=(u[(i+1,j)]-u[(i-1,j)])/(dx[(i,j)]+dx[(i-1,j)])
-        V_=(v[(i,j+1)]-v[(i,j-1)])/(dy[(i,j)]+dy[(i,j-1)])
+        U_=(u[(i,j)]-u[(i-1,j)])/dx[(i-1,j)]
+        V_=(v[(i,j)]-v[(i,j-1)])/dy[(i,j-1)]
         
-        rhs=-rho/dt*(U_+V_)
+        rhs=rho/dt*(U_+V_)
         return rhs
 
     Con = 1e-6
@@ -77,7 +77,7 @@ def poisson(P,u,v,dt,dx,dy,rho):
                 rhs = RHS(u,v,dx,dy,i,j,dt,rho)
                 
                 P[(i,j)]=(frac_x+frac_y)**(-1)*(frac_rx*(P[(i+1,j)]+P[(i-1,j)])+frac_ry*(P[(i,j+1)]+P[(i,j-1)])-rhs)
-        if k == 10000000:# Look into this
+        if k == 100000:# Look into this
             print('not converged', err)
             break
         err = np.max(np.abs(P-temp))
@@ -146,8 +146,8 @@ def predictor(x, y, u, v, T, dt, T_ref, rho, g, nu, beta):
     #print(nx, ny)
 
 
-    for i in range(1, nx-2):
-        for j in range(1, ny-2):
+    for i in range(1, nx-1):
+        for j in range(1, ny-1):
             #print(i,j)
             u_[i][j] = u[i][j] + dt*(nu*(Diff(u, x, y, i, j)) - Adv(u, v, x, y, i, j, 0))
 
@@ -168,8 +168,8 @@ def corrector(x, y, u, v, p, dt, rho):
     u_ = copy.deepcopy(u)
     v_ = copy.deepcopy(v)
 
-    for i in range(1, nx-2):
-        for j in range(1, nx-2):
+    for i in range(1, nx-1):
+        for j in range(1, nx-1):
 
             x_1 = x[(i,j)] 
             x_0 = x[(i-1,j)]
@@ -186,7 +186,7 @@ def BC_update(u, v, p):
     ny = p.shape[1]-1
     #inlet
     #v[0,:] = v[1,:]
-    v[0,:] = copy.deepcopy(v[1,:])
+    v[0,:] = copy.deepcopy(-v[1,:])
 
     p[0,:] = copy.deepcopy(p[1,:])
 
@@ -222,16 +222,16 @@ def main():
     nu = 1.569e-5
     alpha_T = 2.239e-5
     alpha_pollutant = 2.239e-5
-    total_t = 0.1
+    total_t = 0.2
     t = 0
-    dt = 0.001
+    dt = 0.01
     g = 10
 
     initialize()
 
     x,y = read_delta(1)
     P, T, u, v = read_all_scalar(0)
-    print(P) 
+    #print(P) 
     #print(T.shape[0], T.shape[1])
 
     running = True
@@ -262,7 +262,10 @@ def main():
     Contour('U', P='yes')
     Contour('V')
     Contour('P')
+    Streamlines('U','V')
+
     #Contour('T')
+    print(u)
 
 
 if __name__ == '__main__':
