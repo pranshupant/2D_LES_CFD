@@ -135,7 +135,7 @@ def predictor(x, y, u, v, T, dt, T_ref, rho, g, nu, beta):
     nx = T.shape[0]
     ny = T.shape[1]
 
-    print(v.shape[0], v.shape[1])
+    #print(v.shape[0], v.shape[1])
 
     u_ = np.zeros((u.shape[0], u.shape[1]))
     v_ = np.zeros((v.shape[0], v.shape[1]))
@@ -176,8 +176,8 @@ def corrector(x, y, u, v, p, dt, rho):
             y_1 = y[(i,j)] 
             y_0 = y[(i,j-1)]
 
-            u_[i][j] = u[i][j] - (dt/rho)*(p[i][j] - p[i-1][j])/(x_1 + x_0)
-            v_[i][j] = v[i][j] - (dt/rho)*(p[i][j] - p[i][j-1])/(y_1 + y_0)
+            u_[i][j] = u[i][j] - (dt/rho)*(p[i+1][j] - p[i][j])/(x_1 + x_0)
+            v_[i][j] = v[i][j] - (dt/rho)*(p[i][j+1] - p[i][j])/(y_1 + y_0)
     
     return u_, v_
 
@@ -202,6 +202,7 @@ def BC_update(u, v, p):
     u[nx,:] = copy.deepcopy(u[nx-1,:])
 
     v[nx,:] = copy.deepcopy(v[nx-1,:])
+    p[nx-1,:] = copy.deepcopy(p[nx,:])
 
     #top
     u[:,ny] =  copy.deepcopy(u[:,ny-1])
@@ -222,16 +223,16 @@ def main():
     nu = 1.569e-5
     alpha_T = 2.239e-5
     alpha_pollutant = 2.239e-5
-    total_t = 0.2
+    total_t = 0.1
     t = 0
-    dt = 0.01
+    dt = 0.001
     g = 10
 
     initialize()
 
     x,y = read_delta(1)
     P, T, u, v = read_all_scalar(0)
-    #print(P) 
+    print(P.shape) 
     #print(T.shape[0], T.shape[1])
 
     running = True
