@@ -1,7 +1,7 @@
 import numpy as np,os
 
 def write_points(fileout,Points):
-    d=3
+    d=6
     nx=len(Points[0,:,0])
     ny=len(Points[0,0,:])
     file=open(fileout,'w')
@@ -46,7 +46,7 @@ def deltas_write(Points_read):
     return dx,dy
 
 def write_scalar(fileout,Scalar):
-    d=3
+    d=6
     nx=len(Scalar[:,0])
     ny=len(Scalar[0,:])
     file=open(fileout,'w')

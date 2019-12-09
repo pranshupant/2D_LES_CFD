@@ -4,6 +4,11 @@ from Initialize import *
 from contour import *
 import copy
 
+def timer(t1):
+    # print(time.time()-t1)
+    return time.time()
+
+
 # @jit(nopython=True)
 def transport(T,u,v,dt,dx,dy,alpha):
     nx = T.shape[0]-1
@@ -37,7 +42,7 @@ def transport(T,u,v,dt,dx,dy,alpha):
             T[(i,j)]=T[(i,j)]+dt*(rhs-duTdx-dvTdy)
     return T
 
-# @jit(nopython=True)
+@jit(nopython=True)
 def poisson(P,u,v,dt,dx,dy,rho):
     # u and v are from the "predictor step"
     # P comes from the previous time step
@@ -69,7 +74,8 @@ def poisson(P,u,v,dt,dx,dy,rho):
     err = 1
     k = 0
     while (err>Con):
-        temp = copy.deepcopy(P)
+        # temp = copy.deepcopy(P)
+        temp=P
         k+=1
         for i in range(1,nx):
             for j in range(1,ny):
@@ -83,7 +89,7 @@ def poisson(P,u,v,dt,dx,dy,rho):
         err = np.max(np.abs(P-temp))
     return P
 
-# @jit(nopython=True)
+@jit(nopython=True)
 def Adv(u, v, x, y, i, j, flag): 
     x_1 = x[(i,j)] 
     x_0 = x[(i-1,j)]
@@ -109,7 +115,7 @@ def Adv(u, v, x, y, i, j, flag):
 
         return v_1 + v_2
 
-# @jit(nopython=True)
+@jit(nopython=True)
 def Diff(u, x, y, i, j):
 
     # u_1 = np.zeros((u.shape[0], u.shape[1]))
@@ -129,7 +135,7 @@ def Diff(u, x, y, i, j):
 
     return u_1 + u_2
 
-# @jit(nopython=True)
+@jit(nopython=True)
 def predictor(x, y, u, v, T, dt, T_ref, rho, g, nu, beta):
     # Main Predictor Loop
     nx = T.shape[0]
@@ -140,8 +146,11 @@ def predictor(x, y, u, v, T, dt, T_ref, rho, g, nu, beta):
     u_ = np.zeros((u.shape[0], u.shape[1]))
     v_ = np.zeros((v.shape[0], v.shape[1]))
 
-    u_ = copy.deepcopy(u)
-    v_ = copy.deepcopy(v)
+    # u_ = copy.deepcopy(u)
+    # v_ = copy.deepcopy(v)
+
+    u_=u
+    v_=v
     #print('*******')
     #print(nx, ny)
 
@@ -155,7 +164,7 @@ def predictor(x, y, u, v, T, dt, T_ref, rho, g, nu, beta):
     
     return u_, v_
 
-# @jit(nopython=True)
+@jit(nopython=True)
 def corrector(x, y, u, v, p, dt, rho):
 
     nx = p.shape[0]
@@ -165,11 +174,14 @@ def corrector(x, y, u, v, p, dt, rho):
     u_ = np.zeros((u.shape[0], u.shape[1]))
     v_ = np.zeros((v.shape[0], v.shape[1]))
 
-    u_ = copy.deepcopy(u)
-    v_ = copy.deepcopy(v)
+    # u_ = copy.deepcopy(u)
+    # v_ = copy.deepcopy(v)
+
+    u_=u
+    v_=v
 
     for i in range(1, nx-1):
-        for j in range(1, nx-1):
+        for j in range(1, ny-1):
 
             x_1 = x[(i,j)] 
             x_0 = x[(i-1,j)]
@@ -181,6 +193,7 @@ def corrector(x, y, u, v, p, dt, rho):
     
     return u_, v_
 
+# @jit(nopython=True)
 def BC_update(u, v, p):
     nx = p.shape[0]-1
     ny = p.shape[1]-1
@@ -206,11 +219,18 @@ def BC_update(u, v, p):
 
     #top
     u[:,ny] =  copy.deepcopy(u[:,ny-1])
+    #u[:,ny] = 2.
+    #u[:,ny-1] = 2.
+    # u[:,ny] = copy.deepcopy(-u[:,ny-1])
 
-    v[:,ny-1] =  copy.deepcopy(v[:,ny-2])
-    v[:,ny] =  copy.deepcopy(v[:,ny-1])
+    # v[:,ny-1] =  copy.deepcopy(v[:,ny-2])
+    # v[:,ny] =  copy.deepcopy(v[:,ny-1])
+    v[:,ny] = 0.
+    v[:,ny-1] = 0.
+
 
     p[:,ny] = copy.deepcopy(p[:,ny-1])
+
     return u, v, p
 
 
@@ -220,30 +240,35 @@ def main():
     rho = 1.225
     T_ref = 300
     beta = 1./300
-    nu = 1.569e-5
+    nu = 1.569e-3
     alpha_T = 2.239e-5
     alpha_pollutant = 2.239e-5
-    total_t = 0.1
+    total_t = 2
     t = 0
-    dt = 0.001
+    dt = 0.0001
     g = 10
 
     initialize()
 
-    x,y = read_delta(1)
+    x,y = read_delta(0)
     P, T, u, v = read_all_scalar(0)
     print(P.shape) 
     #print(T.shape[0], T.shape[1])
 
     running = True
     while running:
+        print('\ntime=%.3f'%t)
+        t1=time.time()
         
         u_, v_ = predictor(x, y, u, v, T, dt, T_ref, rho, g, nu, beta)
+        t1=timer(t1)
         #print(u_)
         p_new = poisson(P,u_,v_,dt,x,y,rho)
+        t1=timer(t1)
         #p_new = copy.deepcopy(P)
         #print(p_new)
         u_new, v_new = corrector(x, y, u_, v_, p_new, dt, rho)
+        t1=timer(t1)
         #print(u_new)
         #T_new = transport(T,u,v,dt,x,y,alpha_T)
         #phi_new = transport(phi,u,v,dt,x,y,alpha_pollutant) #Pollutant Transport
@@ -256,17 +281,18 @@ def main():
         P = copy.deepcopy(p_new)
 
         t += dt
-        write_all_scalar(P, T, u_new, v_new, t)
+        # write_all_scalar(P, T, u_new, v_new, t)
         
         if t >= total_t:
+            write_all_scalar(P, T, u_new, v_new, t)
             running = False
-    Contour('U', P='yes')
-    Contour('V')
-    Contour('P')
-    Streamlines('U','V')
+    Contour('U', P='yes',grid='yes')
+    Contour('V',grid='yes')
+    Contour('P',grid='yes')
+    Streamlines('U','V',grid='yes')
 
     #Contour('T')
-    print(u)
+    # print(u)
 
 
 if __name__ == '__main__':

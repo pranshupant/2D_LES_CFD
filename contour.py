@@ -26,6 +26,33 @@ def averaging(Scalar,axis=0):
                 Scalar1[i,j]=(Scalar[i,j+1]+Scalar[i+1,j+1])/2                
     return Scalar1
 
+def averaging_grid(Scalar,axis=0):
+    if axis==0: # x axis averaging
+        nx=Scalar.shape[0]-1
+        ny=Scalar.shape[1]-1
+        Scalar1=np.zeros([nx,ny])
+        for i in range(nx):
+            for j in range(ny):
+                Scalar1[i,j]=(Scalar[i,j]+Scalar[i+1,j])/2
+    if axis==1: # y axis averaging
+        nx=Scalar.shape[0]-1
+        ny=Scalar.shape[1]-1
+        Scalar1=np.zeros([nx,ny])    
+        for i in range(nx):
+            for j in range(ny):
+                Scalar1[i,j]=(Scalar[i,j]+Scalar[i,j+1])/2                
+    return Scalar1
+
+def average_scalar(Scalar):
+    nx=Scalar.shape[0]-1
+    ny=Scalar.shape[1]-1
+    Scalar1=np.zeros([nx,ny])    
+    for i in range(nx):
+        for j in range(ny):
+            Scalar1[i,j]=(Scalar[i,j]+Scalar[i+1,j]+Scalar[i,j+1]+Scalar[i+1,j+1])/4
+    return Scalar1
+
+
 def Point_average(Points):
     nx=Points.shape[1]-1
     ny=Points.shape[2]-1
@@ -38,23 +65,22 @@ def Point_average(Points):
 
 
 def plotting(Points,Scalar,Scalar_name,show='yes',P='no'):
-    plt.contourf(Points[0],Points[1],Scalar,20)
+    plt.contourf(Points[0],Points[1],Scalar,10,cmap='coolwarm')
     plt.title('Contour of '+Scalar_name)
-    plt.colorbar()
-    plt.gca().set_aspect('equal')
+    plt.colorbar(orientation='horizontal')
+    plt.gca().set_aspect('equal') 
     xmin,xmax=np.min(Points[0]),np.max(Points[0])
     ymin,ymax=np.min(Points[1]),np.max(Points[1])
     plt.xlim([xmin,xmax])
     plt.ylim([ymin,ymax])    
     if P=='yes':
         print(Scalar)
-
     if show=='yes':
         plt.show()
     else:
         plt.close()
     
-def Contour(Scalar_name,time=-1,show='yes',P='no'): #scalar must be string of what you want to print
+def Contour(Scalar_name,time=-1,show='yes',P='no',grid='no'): #scalar must be string of what you want to print
     #find all times, hence end time
     times=[]
     files=os.listdir('Results')
@@ -68,18 +94,26 @@ def Contour(Scalar_name,time=-1,show='yes',P='no'): #scalar must be string of wh
     else: 
         Scalar=read_scalar('Results/'+str(time)+'/'+Scalar_name+'.txt')
     Points=read_points('Constant/Points.txt')
-    Points=copy.deepcopy(Point_average(Points))
-    if Scalar_name=='U':
-        Scalar=copy.deepcopy(averaging(Scalar,1))
-    elif Scalar_name=='V':
-        Scalar=copy.deepcopy(averaging(Scalar,0))
-    else:
-        Scalar = copy.deepcopy(Scalar[1:-1,1:-1])
-    
+    if grid=='no':
+        Points=copy.deepcopy(Point_average(Points))
+        if Scalar_name=='U':
+            Scalar=copy.deepcopy(averaging(Scalar,1))
+        elif Scalar_name=='V':
+            Scalar=copy.deepcopy(averaging(Scalar,0))
+        else:
+            Scalar = copy.deepcopy(Scalar[1:-1,1:-1])
+    else:      
+        if Scalar_name=='U':
+            Scalar=copy.deepcopy(averaging_grid(Scalar,1))
+        elif Scalar_name=='V':
+            Scalar=copy.deepcopy(averaging_grid(Scalar,0))
+        else:
+            Scalar = copy.deepcopy(average_scalar(Scalar))
+
     plotting(Points,Scalar,Scalar_name,show,P)
 
 
-def Streamlines(U_name,V_name,time=-1,show='yes'):
+def Streamlines(U_name,V_name,time=-1,show='yes',grid='no'):
     times=[]
     files=os.listdir('Results')
     for i in files:
@@ -94,26 +128,82 @@ def Streamlines(U_name,V_name,time=-1,show='yes'):
     else:
         U=read_scalar('Results/'+str(time)+'/'+U_name+'.txt')
         V=read_scalar('Results/'+str(time)+'/'+V_name+'.txt')
-            
     Points=read_points('Constant/Points.txt')
-    Points=copy.deepcopy(Point_average(Points))
-    U=copy.deepcopy(averaging(U,1))
-    V=copy.deepcopy(averaging(V,0)) 
-    
+    if grid=='no':
+        Points=copy.deepcopy(Point_average(Points))
+        U=copy.deepcopy(averaging(U,1))
+        V=copy.deepcopy(averaging(V,0)) 
+    else:
+        U=copy.deepcopy(averaging_grid(U,1))
+        V=copy.deepcopy(averaging_grid(V,0)) 
+    #speed=np.sqrt(U**2 + V**2).T
     speed=np.sqrt(U**2 + V**2).T
-    lw=3*speed**0.3/np.max(speed)
+    #speed=1    
+    lw=1*speed**0.3/np.max(speed)
+    
     plt.title('Streamlines')
-    plt.streamplot(Points[0][:,0],Points[1][0,:], U.T, V.T, color=speed,linewidth=lw, cmap='Spectral',density=4)#,minlength=dx/10)
-    plt.colorbar()
+    plt.gca().set_aspect('equal') 
+    # plt.streamplot(Points[0][:,0],Points[1][0,:], U, V, color=speed,linewidth=lw, cmap='Spectral',density=4)#,minlength=dx/10)
+    plt.streamplot(Points[0][:,0],Points[1][0,:], U.T, V.T, color=speed,linewidth=lw, cmap='coolwarm',density=4)#,minlength=dx/10)
+    plt.colorbar(orientation='horizontal')
     xmin,xmax=min(Points[0][:,0]),max(Points[0][:,0])
     ymin,ymax=min(Points[1][0,:]),max(Points[1][0,:])
     plt.xlim([xmin,xmax])
     plt.ylim([ymin,ymax])
-    
     plt.show()    
 
+def Quiver(U_name,V_name,time=-1,show='yes',grid='no'):
+    times=[]
+    files=os.listdir('Results')
+    for i in files:
+        if isfloat(i):
+            times.append('Results/'+i)
+    if time==-1:
+        U=read_scalar(times[time]+'/'+U_name+'.txt')
+        V=read_scalar(times[time]+'/'+V_name+'.txt')    
+    elif time=='0': 
+        U=read_scalar(str(time)+'/'+U_name+'.txt')
+        V=read_scalar(str(time)+'/'+V_name+'.txt')
+    else:
+        U=read_scalar('Results/'+str(time)+'/'+U_name+'.txt')
+        V=read_scalar('Results/'+str(time)+'/'+V_name+'.txt')
+    Points=read_points('Constant/Points.txt')
+    if grid=='no':
+        Points=copy.deepcopy(Point_average(Points))
+        U=copy.deepcopy(averaging(U,1))
+        V=copy.deepcopy(averaging(V,0)) 
+    else:
+        U=copy.deepcopy(averaging_grid(U,1))
+        V=copy.deepcopy(averaging_grid(V,0)) 
+    #speed=np.sqrt(U**2 + V**2).T
+    speed=np.sqrt(U**2 + V**2).T
+    #speed=1    
+    lw=1*speed**0.3/np.max(speed)
+    
+    plt.title('Streamlines')
+    plt.gca().set_aspect('equal') 
+    #plt.quiver(Points[0][:,0],Points[1][0,:], U.T, V.T, color=speed,linewidth=lw, cmap='coolwarm',density=4)#,minlength=dx/10)
+    plt.quiver([Points[0][:,0],Points[1][0,:]], U.T, V.T)#,minlength=dx/10)
+    
+    plt.colorbar(orientation='horizontal')
+    xmin,xmax=min(Points[0][:,0]),max(Points[0][:,0])
+    ymin,ymax=min(Points[1][0,:]),max(Points[1][0,:])
+    plt.xlim([xmin,xmax])
+    plt.ylim([ymin,ymax])
+    plt.show()    
+
+
 # Contour('U','0',P='yes')
-# Contour('V','0',P='yes')
 
-# Streamlines('U','V','0')
+# Contour('U','0',grid='yes')
+# Contour('U',grid='yes')
 
+# Contour('V',grid='yes')
+# Contour('P',grid='yes')
+
+# Contour('V',P='yes')
+
+# Streamlines('U','V',grid='yes')
+# Streamlines('U','V')
+
+# Quiver('U','V',grid='yes')
