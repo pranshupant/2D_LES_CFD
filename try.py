@@ -1,6 +1,7 @@
 import numpy as np 
 from numba import jit
 from Initialize import *
+from Animation import *
 from contour import *
 import copy
 
@@ -9,10 +10,12 @@ def timer(t1):
     return time.time()
 
 
-# @jit(nopython=True)
+@jit(nopython=True)
 def transport(T,u,v,dt,dx,dy,alpha):
     nx = T.shape[0]-1
     ny = T.shape[1]-1
+
+    T_ = np.zeros(T.shape)
     def RHS(alpha,T,dx,dy,i,j):
         rx_top=dx[(i,j)]-dx[(i-1,j)]
         rx_bot=dx[(i,j)]+dx[(i-1,j)]
@@ -22,25 +25,25 @@ def transport(T,u,v,dt,dx,dy,alpha):
         ry_bot=dy[(i,j)]+dy[(i,j-1)]
         ry = ry_top/ry_bot
 
-        T2_x=((1-rx)*T[(i+1,j)]-2*T[(i,j)]+(1-rx)*T[(i-1,j)])/((dx[(i,j)]**2+dx[(i-1,j)]**2)/2)
-        T2_y=((1-ry)*T[(i,j+1)]-2*T[(i,j)]+(1-ry)*T[(i,j-1)])/((dy[(i,j)]**2+dy[(i,j-1)]**2)/2)
+        T2_x=((1+rx)*T[(i+1,j)]-2*T[(i,j)]+(1-rx)*T[(i-1,j)])/((dx[(i,j)]**2+dx[(i-1,j)]**2)/2)
+        T2_y=((1+ry)*T[(i,j+1)]-2*T[(i,j)]+(1-ry)*T[(i,j-1)])/((dy[(i,j)]**2+dy[(i,j-1)]**2)/2)
 
         rhs=alpha*(T2_x+T2_y)
 
         return rhs
 
     def Der_1(u,v,T,dx,dy,i,j):
-        duTdx=(u[(i,j)]*(T[(i+1,j)]+T[(i,j)])-u[(i-1,j)]*(T[(i,j)]-T[(i-1,j)]))/dx[(i,j)]/2
-        dvTdy=(v[(i,j)]*(T[(i,j+1)]+T[(i,j)])-v[(i,j-1)]*(T[(i,j)]-T[(i,j-1)]))/dy[(i,j)]/2
+        duTdx=(u[(i,j)]*(T[(i+1,j)]+T[(i,j)])-u[(i-1,j)]*(T[(i,j)]+T[(i-1,j)]))/dx[(i,j)]/2
+        dvTdy=(v[(i,j)]*(T[(i,j+1)]+T[(i,j)])-v[(i,j-1)]*(T[(i,j)]+T[(i,j-1)]))/dy[(i,j)]/2
 
         return duTdx, dvTdy
 
-    for i in range(1,nx-1):
-        for j in range(1,ny-1):
+    for i in range(1,nx):
+        for j in range(1,ny):
             rhs = RHS(alpha,T,dx,dy,i,j)
             duTdx,dvTdy=Der_1(u,v,T,dx,dy,i,j)
-            T[(i,j)]=T[(i,j)]+dt*(rhs-duTdx-dvTdy)
-    return T
+            T_[(i,j)]=T[(i,j)]+dt*(rhs-duTdx-dvTdy)
+    return T_
 
 @jit(nopython=True)
 def poisson(P,u,v,dt,dx,dy,rho):
@@ -59,9 +62,11 @@ def poisson(P,u,v,dt,dx,dy,rho):
 
         frac_x=4/(dx[(i,j)]**2+dx[(i-1,j)]**2)
         frac_y=4/(dy[(i,j)]**2+dy[(i,j-1)]**2)
-        frac_rx=2*(1-rx)/(dx[(i,j)]**2+dx[(i-1,j)]**2)
-        frac_ry=2*(1-ry)/(dy[(i,j)]**2+dy[(i,j-1)]**2)
-        return frac_x, frac_y, frac_rx, frac_ry
+        Rx_p=2*(1+rx)/(dx[(i,j)]**2+dx[(i-1,j)]**2)
+        Rx_n=2*(1-rx)/(dx[(i,j)]**2+dx[(i-1,j)]**2)
+        Ry_p=2*(1+ry)/(dy[(i,j)]**2+dy[(i,j-1)]**2)
+        Ry_n=2*(1-ry)/(dy[(i,j)]**2+dy[(i,j-1)]**2)
+        return frac_x, frac_y, Rx_p, Rx_n, Ry_p, Ry_n
 
     def RHS(u,v,dx,dy,i,j,dt,rho):
         U_=(u[(i,j)]-u[(i-1,j)])/dx[(i-1,j)]
@@ -79,10 +84,10 @@ def poisson(P,u,v,dt,dx,dy,rho):
         k+=1
         for i in range(1,nx):
             for j in range(1,ny):
-                frac_x,frac_y,frac_rx,frac_ry=Frac(dx,dy,i,j)
+                frac_x,frac_y,Rx_p,Rx_n,Ry_p,Ry_n=Frac(dx,dy,i,j)
                 rhs = RHS(u,v,dx,dy,i,j,dt,rho)
                 
-                P[(i,j)]=(frac_x+frac_y)**(-1)*(frac_rx*(P[(i+1,j)]+P[(i-1,j)])+frac_ry*(P[(i,j+1)]+P[(i,j-1)])-rhs)
+                P[(i,j)]=(frac_x+frac_y)**(-1)*((Rx_p*P[(i+1,j)]+Rx_n*P[(i-1,j)])+(Ry_p*P[(i,j+1)]+Ry_n*P[(i,j-1)])-rhs)
         if k == 100000:# Look into this
             print('not converged', err)
             break
@@ -194,7 +199,7 @@ def corrector(x, y, u, v, p, dt, rho):
     return u_, v_
 
 # @jit(nopython=True)
-def BC_update(u, v, p):
+def BC_update(u, v, p, T):
     nx = p.shape[0]-1
     ny = p.shape[1]-1
     #inlet
@@ -202,6 +207,7 @@ def BC_update(u, v, p):
     v[0,:] = copy.deepcopy(-v[1,:])
 
     p[0,:] = copy.deepcopy(p[1,:])
+    T[0,:] = copy.deepcopy(T[1,:])
 
     #bottom
     u[:,0] =  copy.deepcopy(-u[:,1])
@@ -209,6 +215,7 @@ def BC_update(u, v, p):
     v[:,0] = 0.
 
     p[:,0] = copy.deepcopy(p[:,1])
+    T[:,0] = copy.deepcopy(T[:,1])
 
     #outlet
     u[nx-1,:] = copy.deepcopy(u[nx-2,:])
@@ -216,11 +223,12 @@ def BC_update(u, v, p):
 
     v[nx,:] = copy.deepcopy(v[nx-1,:])
     p[nx-1,:] = copy.deepcopy(p[nx,:])
+    T[nx,:] = copy.deepcopy(T[nx-1,:])
 
     #top
     u[:,ny] =  copy.deepcopy(u[:,ny-1])
-    #u[:,ny] = 2.
-    #u[:,ny-1] = 2.
+    # u[:,ny] = 2.
+    # u[:,ny-1] = 2.
     # u[:,ny] = copy.deepcopy(-u[:,ny-1])
 
     # v[:,ny-1] =  copy.deepcopy(v[:,ny-2])
@@ -230,8 +238,12 @@ def BC_update(u, v, p):
 
 
     p[:,ny] = copy.deepcopy(p[:,ny-1])
+    T[:,ny] = copy.deepcopy(T[:,ny-1])
 
-    return u, v, p
+    
+    T[20,5] = 325
+
+    return u, v, p, T
 
 
 
@@ -243,10 +255,10 @@ def main():
     nu = 1.569e-3
     alpha_T = 2.239e-5
     alpha_pollutant = 2.239e-5
-    total_t = 2
+    total_t = 1
     t = 0
     dt = 0.0001
-    g = 10
+    g = 9.81
 
     initialize()
 
@@ -257,7 +269,11 @@ def main():
 
     running = True
     while running:
-        print('\ntime=%.3f'%t)
+        if int(t/dt)%1000==0:
+            print('\ntime=%.3f'%t)
+            #if t!=0:
+            write_all_scalar(P, T, u, v, t)
+            # sys.exit()
         t1=time.time()
         
         u_, v_ = predictor(x, y, u, v, T, dt, T_ref, rho, g, nu, beta)
@@ -270,28 +286,32 @@ def main():
         u_new, v_new = corrector(x, y, u_, v_, p_new, dt, rho)
         t1=timer(t1)
         #print(u_new)
-        #T_new = transport(T,u,v,dt,x,y,alpha_T)
+        T_new = transport(T,u_new,v_new,dt,x,y,alpha_T)
+        #T_new = np.zeros(T.shape)
+        #print(T_new)
         #phi_new = transport(phi,u,v,dt,x,y,alpha_pollutant) #Pollutant Transport
 
-        u_new, v_new, p_new = copy.deepcopy(BC_update(u_new, v_new, p_new))
+        u_new, v_new, p_new, T_new = copy.deepcopy(BC_update(u_new, v_new, p_new, T_new))
         
         u = copy.deepcopy(u_new)
         v = copy.deepcopy(v_new)
 
         P = copy.deepcopy(p_new)
+        T = copy.deepcopy(T_new)
 
         t += dt
+        #sys.exit()
         # write_all_scalar(P, T, u_new, v_new, t)
         
         if t >= total_t:
             write_all_scalar(P, T, u_new, v_new, t)
             running = False
-    Contour('U', P='yes',grid='yes')
+    Contour('U',grid='yes')
     Contour('V',grid='yes')
     Contour('P',grid='yes')
     Streamlines('U','V',grid='yes')
 
-    #Contour('T')
+    Contour('T')
     # print(u)
 
 

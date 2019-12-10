@@ -83,10 +83,13 @@ def plotting(Points,Scalar,Scalar_name,show='yes',P='no'):
 def Contour(Scalar_name,time=-1,show='yes',P='no',grid='no'): #scalar must be string of what you want to print
     #find all times, hence end time
     times=[]
-    files=os.listdir('Results')
-    for i in files:
-        if isfloat(i):
-            times.append('Results/'+i)
+    try:
+        files=os.listdir('Results')
+        for i in files:
+            if isfloat(i):
+                times.append('Results/'+i)
+    except:
+        print('Result file not there')
     if time==-1:
         Scalar=read_scalar(times[time]+'/'+Scalar_name+'.txt')
     elif time=='0':
@@ -115,10 +118,13 @@ def Contour(Scalar_name,time=-1,show='yes',P='no',grid='no'): #scalar must be st
 
 def Streamlines(U_name,V_name,time=-1,show='yes',grid='no'):
     times=[]
-    files=os.listdir('Results')
-    for i in files:
-        if isfloat(i):
-            times.append('Results/'+i)
+    try:
+        files=os.listdir('Results')
+        for i in files:
+            if isfloat(i):
+                times.append('Results/'+i)
+    except:
+        print('Result file not there')
     if time==-1:
         U=read_scalar(times[time]+'/'+U_name+'.txt')
         V=read_scalar(times[time]+'/'+V_name+'.txt')    
@@ -182,6 +188,10 @@ def Quiver(U_name,V_name,time=-1,show='yes',grid='no'):
     
     plt.title('Streamlines')
     plt.gca().set_aspect('equal') 
+    print(Points[0][:,0].shape)
+    print(Points[1][0,:].shape)
+    # sys.exit()
+
     #plt.quiver(Points[0][:,0],Points[1][0,:], U.T, V.T, color=speed,linewidth=lw, cmap='coolwarm',density=4)#,minlength=dx/10)
     plt.quiver([Points[0][:,0],Points[1][0,:]], U.T, V.T)#,minlength=dx/10)
     
@@ -200,10 +210,10 @@ def Quiver(U_name,V_name,time=-1,show='yes',grid='no'):
 
 # Contour('V',grid='yes')
 # Contour('P',grid='yes')
-
+#Contour('T',grid='yes')
 # Contour('V',P='yes')
 
 # Streamlines('U','V',grid='yes')
 # Streamlines('U','V')
 
-# Quiver('U','V',grid='yes')
+# Quiver('U','V','0',grid='yes')

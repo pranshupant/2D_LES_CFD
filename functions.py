@@ -1,4 +1,4 @@
-import numpy as np,os
+import numpy as np,os,copy
 
 def write_points(fileout,Points):
     d=6
@@ -35,14 +35,20 @@ def deltas_write(Points_read):
     ny=len(Points_read[0,0,:])
     dx=np.zeros([nx,ny])
     dy=np.zeros([nx,ny])
-    for i in range(1,nx-1):
-        for j in range(1,ny-1):
+    for i in range(nx-1):
+        for j in range(ny-1):
             dx[i,j]=Points_read[0,i+1,j]-Points_read[0,i,j]
             dy[i,j]=Points_read[1,i,j+1]-Points_read[1,i,j]
-    dx[0,:]=dx[1,:]
-    dx[-1,:]=dx[-2,:]
-    dy[:,0]=dy[:,1]
-    dy[:,-1]=dy[:,-2]
+    dx[0,:]=copy.deepcopy(dx[1,:])
+    dx[-1,:]=copy.deepcopy(dx[-2,:])
+    dx[:,0]=copy.deepcopy(dx[:,1])
+    dx[:,-1]=copy.deepcopy(dx[:,-2])
+    
+    dy[:,0]=copy.deepcopy(dy[:,1])
+    dy[:,-1]=copy.deepcopy(dy[:,-2])
+    
+    dy[0,:]=copy.deepcopy(dy[1,:])
+    dy[-1,:]=copy.deepcopy(dy[-2,:])
     return dx,dy
 
 def write_scalar(fileout,Scalar):
@@ -102,7 +108,7 @@ def read_all_scalar(ch=0):
     path='0/'
     files=os.listdir(path)
     files.sort()
-    print(files)
+    # print(files)
     X=[]
     for paths in files:
         try:

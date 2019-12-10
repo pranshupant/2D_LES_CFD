@@ -14,30 +14,40 @@ def isfloat(value):
 # Hello its Me!
 # Hello this is papa and mama
 def initialize():
-    files=os.listdir()
-    for i in files:
-        if isfloat(i):
-            shutil.rmtree(i)
     
     try:
+        print('Removing 0 time')
+        files=os.listdir()
+        for i in files:
+            if isfloat(i):
+                shutil.rmtree(i)
+        
         shutil.rmtree('Constant')
+        print('Removed Constant')
+        
         shutil.rmtree('Results')
+        print('Removed Results')
         
     except:
-        print('whatever this is')
+        print('Results/Constants/0 does not exist')
     try:
         os.makedirs('Constant/')
+        print('Created Constants')
+        
         os.makedirs('0/')
+        print('Created 0')
+        
     except:
-        print('Running')
+        print('Running Code with existing Constants/0')
+
     Cons='Constant/'
-    Rho=1000
+    Rho=1.225
     N=800
     M=200
     nx=N+1
     ny=M+1
-    xmax=4
-    ymax=1
+    xmax=2
+    ymax=0.5
     atm=1
     Temperature=300
 
@@ -58,37 +68,31 @@ def initialize():
     # Points_read=read_points(Cons+'Points.txt')
 
     dx,dy=deltas_write(Points)
+    # print(dx)
+    # print(dy)
     #print(dx.shape)
-    dx=np.ones([N+1,M+1])*xmax/N
-    dy=np.ones([N+1,M+1])*ymax/M
+    # dx=np.ones([N+1,M+1])*xmax/N
+    # dy=np.ones([N+1,M+1])*ymax/M
     
     write_scalar(Cons+'Dx.txt',dx)
     write_scalar(Cons+'Dy.txt',dy)
 
     P=np.zeros([nx+1,ny+1])*atm
     write_scalar('0/P.txt',P)
-    np.savetxt('P_.txt',P, delimiter='\t',fmt='%.3f')
 
     U_in=np.linspace(0,1,ny+1)
     U=np.zeros([nx+1,ny+1])
-    U[0,1:-1]= 2.#U_in
+    U[0,:]= 2.*U_in
     # print(U)
     write_scalar('0/U.txt',U)
-    np.savetxt('U_.txt',U, delimiter='\t',fmt='%.3f')
 
     V=np.zeros([nx+1,ny+1])
     write_scalar('0/V.txt',V)
-    np.savetxt('V_.txt',V, delimiter='\t',fmt='%.3f')
 
     T=np.ones([nx+1,ny+1])*Temperature
+
+    T[20,5] = 325
+
+    # print(T)
     write_scalar('0/T.txt',T)
-    np.savetxt('T_.txt',T, delimiter='\t',fmt='%.3f')
 # initialize()
-
-        
-        
-        
-        
-
-
-
