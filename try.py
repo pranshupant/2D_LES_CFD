@@ -273,51 +273,51 @@ def corrector(x, y, u, v, p, dt, rho):
     
     return u_, v_
 
-# @jit(nopython=True)
+@jit(nopython=True)
 def BC_update(u, v, p, T, phi):
     nx = p.shape[0]-1
     ny = p.shape[1]-1
     #inlet
     #v[0,:] = v[1,:]
-    v[0,:] = copy.deepcopy(-v[1,:])
+    v[0,:] = -v[1,:]
 
-    p[0,:] = copy.deepcopy(p[1,:])
-    T[0,:] = copy.deepcopy(T[1,:])
-    phi[0,:] = copy.deepcopy(phi[1,:])
+    p[0,:] = p[1,:]
+    T[0,:] = T[1,:]
+    phi[0,:] = phi[1,:]
 
     #bottom
-    u[:,0] =  copy.deepcopy(-u[:,1])
+    u[:,0] =  -u[:,1]
 
     v[:,0] = 0.
 
-    p[:,0] = copy.deepcopy(p[:,1])
-    T[:,0] = copy.deepcopy(T[:,1])
-    phi[:,0] = copy.deepcopy(phi[:,1])
+    p[:,0] = p[:,1]
+    T[:,0] = T[:,1]
+    phi[:,0] = phi[:,1]
 
     #outlet
-    u[nx-1,:] = copy.deepcopy(u[nx-2,:])
-    u[nx,:] = copy.deepcopy(u[nx-1,:])
+    u[nx-1,:] = u[nx-2,:]
+    u[nx,:] = u[nx-1,:]
 
-    v[nx,:] = copy.deepcopy(v[nx-1,:])
-    p[nx-1,:] = copy.deepcopy(p[nx,:])
-    T[nx,:] = copy.deepcopy(T[nx-1,:])
-    phi[nx,:] = copy.deepcopy(phi[nx-1,:])
+    v[nx,:] = v[nx-1,:]
+    p[nx-1,:] = p[nx,:]
+    T[nx,:] = T[nx-1,:]
+    phi[nx,:] = phi[nx-1,:]
 
     #top
-    u[:,ny] =  copy.deepcopy(u[:,ny-1])
+    u[:,ny] =  u[:,ny-1]
     # u[:,ny] = 2.
     # u[:,ny-1] = 2.
-    # u[:,ny] = copy.deepcopy(-u[:,ny-1])
+    # u[:,ny] = -u[:,ny-1]
 
-    # v[:,ny-1] =  copy.deepcopy(v[:,ny-2])
-    # v[:,ny] =  copy.deepcopy(v[:,ny-1])
+    # v[:,ny-1] =  v[:,ny-2]
+    # v[:,ny] =  v[:,ny-1]
     v[:,ny] = 0.
     v[:,ny-1] = 0.
 
 
-    p[:,ny] = copy.deepcopy(p[:,ny-1])
-    T[:,ny] = copy.deepcopy(T[:,ny-1])
-    phi[:,ny] = copy.deepcopy(phi[:,ny-1])
+    p[:,ny] = p[:,ny-1]
+    T[:,ny] = T[:,ny-1]
+    phi[:,ny] = phi[:,ny-1]
 
     
     T[50,25] = 350
@@ -325,6 +325,7 @@ def BC_update(u, v, p, T, phi):
 
     return u, v, p, T, phi
 
+@jit(nopython=True)
 def Building_BC(u, v, p, T, phi, Dim=[10,20,10]):
     k, k_, r = Dim
     nx = p.shape[0]-1
@@ -345,11 +346,11 @@ def Building_BC(u, v, p, T, phi, Dim=[10,20,10]):
     phi[k+1:k_,r-1] = phi[k+1:k_,r]
     
     #right
-    u[k_,:r] = 0.
-    v[k_,:r] = -v[k_+1,:r]
-    p[k_,:r] = p[k_+1,:r]
-    T[k_,:r] = T[k_+1,:r]
-    phi[k_,:r] = phi[k_+1,:r]
+    u[k_-1,:r] = 0.
+    v[k_-1,:r] = -v[k_,:r]
+    p[k_-1,:r] = p[k_,:r]
+    T[k_-1,:r] = T[k_,:r]
+    phi[k_-1,:r] = phi[k_,:r]
     
     #inside
     u[k+1:k_,:r-1] = 0.
@@ -411,7 +412,7 @@ def main():
 
         u_new, v_new, p_new, T_new, phi_new = copy.deepcopy(BC_update(u_new, v_new, p_new, T_new, phi_new))
         
-        u_new, v_new, p_new, T_new, phi_new = copy.deepcopy(Building_BC(u_new, v_new, p_new, T_new, phi_new,[40,50,20]))
+        u_new, v_new, p_new, T_new, phi_new = copy.deepcopy(Building_BC(u_new, v_new, p_new, T_new, phi_new,[40,50,10]))
         
         u = copy.deepcopy(u_new)
         v = copy.deepcopy(v_new)
