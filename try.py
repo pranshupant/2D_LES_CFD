@@ -325,6 +325,41 @@ def BC_update(u, v, p, T, phi):
 
     return u, v, p, T, phi
 
+def Building_BC(u, v, p, T, phi, k=10, k_=20, r=10):
+    nx = p.shape[0]-1
+    ny = p.shape[1]-1
+    #left
+    u[k,:r] = 0.
+    v[k+1,:r] = -v[k,:r]
+    p[k+1,:r] = p[k,:r]
+    T[k+1,:r] = T[k,:r]
+    phi[k+1,:r] = phi[k,:r]
+
+   
+    #top
+    u[k+1:k_,r] = -u[k+1:k_,r+1]
+    v[k+1:k_,r] = 0.
+    p[k+1:k_,r] = p[k+1:k_,r+1]
+    T[k+1:k_,r] = T[k+1:k_,r+1]
+    phi[k+1:k_,r] = phi[k+1:k_,r+1]
+    
+    #right
+    u[k_,:r] = 0.
+    v[k_,:r] = -v[k_+1,:r]
+    p[k_,:r] = p[k+1,:r]
+    T[k_,:r] = T[k+1,:r]
+    phi[k_,:r] = phi[k+1,:r]
+    
+    #inside
+    u[k+1:k_,:r-1] = 0.
+    v[k+2:k_-1,:r-1] = 0.
+    p[k+2:k_-1,:r-1] = 0.
+    T[k+2:k_-1,:r-1] = 0.
+    phi[k+2:k_-1,:r-1] = 0.
+    
+    return u, v, p, T, phi
+
+
 #@numba.jit(nopython=True, parallel=True)
 def main():
     rho = 1.225
