@@ -90,6 +90,7 @@ def Contour(Scalar_name,time=-1,show='yes',P='no',grid='no'): #scalar must be st
                 times.append('Results/'+i)
     except:
         print('Result file not there')
+        return 0
     if time==-1:
         Scalar=read_scalar(times[time]+'/'+Scalar_name+'.txt')
     elif time=='0':
@@ -125,6 +126,7 @@ def Streamlines(U_name,V_name,time=-1,show='yes',grid='no'):
                 times.append('Results/'+i)
     except:
         print('Result file not there')
+        return 0
     if time==-1:
         U=read_scalar(times[time]+'/'+U_name+'.txt')
         V=read_scalar(times[time]+'/'+V_name+'.txt')    
@@ -188,8 +190,8 @@ def Quiver(U_name,V_name,time=-1,show='yes',grid='no'):
     
     plt.title('Streamlines')
     plt.gca().set_aspect('equal') 
-    print(Points[0][:,0].shape)
-    print(Points[1][0,:].shape)
+    # print(Points[0][:,0].shape)
+    # print(Points[1][0,:].shape)
     # sys.exit()
 
     #plt.quiver(Points[0][:,0],Points[1][0,:], U.T, V.T, color=speed,linewidth=lw, cmap='coolwarm',density=4)#,minlength=dx/10)
@@ -203,13 +205,52 @@ def Quiver(U_name,V_name,time=-1,show='yes',grid='no'):
     plt.show()    
 
 
+def Grid_plot(show='no'):
+    dx=read_scalar('Constant/Dx.txt')
+    dy=read_scalar('Constant/Dy.txt')
+    nx=dx.shape[0]
+    ny=dx.shape[1]
+    
+    Points=np.zeros([2,nx,ny])
+    for i in range(1,nx):
+        for j in range(ny):
+            Points[0,i,j]=Points[0,i-1,j]+dx[i-1,j]
+    for i in range(nx):
+        for j in range(1,ny):
+            Points[1,i,j]=Points[1,i,j-1]+dy[i,j-1]
+    # sh=Points.shape
+    for i in range(nx):
+        for j in range(ny-1):
+            x=[Points[0,i,j],Points[0,i,j+1]]
+            y=[Points[1,i,j],Points[1,i,j+1]]
+            plt.plot(x,y,c='k',lw=5.0/ny,zorder=6)
+    
+    for j in range(nx-1):
+        for i in range(ny):
+            x=[Points[0,j,i],Points[0,j+1,i]]
+            y=[Points[1,j,i],Points[1,j+1,i]]
+            plt.plot(x,y,c='k',lw=5.0/ny,zorder=6)
+    
+
+    if show=='no':
+        plt.gca().set_aspect('equal')
+        plt.axis('off')
+        plt.savefig('grid.png',dpi=1200,bbox_inches='tight')
+        print('Grid saved !')   
+    elif show=='yes':
+        plt.gca().set_aspect('equal')
+        plt.show()
+        
+    return 0
+
+# Grid_plot()
 # Contour('U','0',P='yes')
 
-# Contour('U','0',grid='yes')
+# Contour('U',grid='yes')
 # Contour('U',grid='yes')
 
-# Contour('V',grid='yes')
-# Contour('P',grid='yes')
+#Contour('V',grid='yes')
+Contour('phi',grid='yes')
 #Contour('T',grid='yes')
 # Contour('V',P='yes')
 

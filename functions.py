@@ -1,4 +1,5 @@
-import numpy as np,os,copy
+import numpy as np,os,copy,sys
+import sympy as sp
 
 def write_points(fileout,Points):
     d=6
@@ -43,13 +44,38 @@ def deltas_write(Points_read):
     dx[-1,:]=copy.deepcopy(dx[-2,:])
     dx[:,0]=copy.deepcopy(dx[:,1])
     dx[:,-1]=copy.deepcopy(dx[:,-2])
-    
     dy[:,0]=copy.deepcopy(dy[:,1])
-    dy[:,-1]=copy.deepcopy(dy[:,-2])
-    
+    dy[:,-1]=copy.deepcopy(dy[:,-2]) 
     dy[0,:]=copy.deepcopy(dy[1,:])
     dy[-1,:]=copy.deepcopy(dy[-2,:])
     return dx,dy
+
+def deltas_write_nonuni(nx,ny,xmax,ymax,dyf):
+    # To find expansion ratio in the y direction from ymax,first cell;dyf and number of cells ny. 
+    e=sp.Symbol('e')
+    y=dyf*e**ny-ymax*e+(ymax-dyf)
+    y_=sp.diff(y)
+    x1=10
+    err=1e-6
+    i=1
+    while 1:
+        x2=x1-y.subs(e,x1)/y_.subs(e,x1)
+        if np.abs(x2-x1)<err or i>100:
+            break
+        else:
+            x1=x2
+    e=x2
+    dx=np.ones([nx,ny])*xmax/(nx-1)
+    dy=np.zeros([nx,ny])
+    for i in range(nx):
+        for j in range(ny):
+            dy[i,j]=dyf*e**j
+    print(e)
+    # print(dy)
+    # print(dx)
+    return dx,dy
+
+
 
 def write_scalar(fileout,Scalar):
     d=6
@@ -87,20 +113,22 @@ def read_scalar(filein,ch=0):
         return Dict
 
 
-def write_all_scalar(P,T,U,V,t='trash'):
+def write_all_scalar(P,T,U,V,phi,t='trash'):
     try:
-        path='Results/%.3e/'%t
+        path='Results/%.6f/'%t
         os.makedirs(path)
         write_scalar(path+'P.txt',P)
         write_scalar(path+'U.txt',U)
         write_scalar(path+'V.txt',V)
         write_scalar(path+'T.txt',T)
+        write_scalar(path+'phi.txt',phi)
 
         np.savetxt(path+'P_.txt',P, delimiter='\t',fmt='%.3f')
         np.savetxt(path+'U_.txt',U, delimiter='\t',fmt='%.3f')
         np.savetxt(path+'V_.txt',V, delimiter='\t',fmt='%.3f')
         np.savetxt(path+'T_.txt',T, delimiter='\t',fmt='%.3f')
-        print('## WRITTEN : time=%.3e'%t)
+        np.savetxt(path+'phi_.txt',phi, delimiter='\t',fmt='%.3f')
+        print('## WRITTEN : time=%.6f'%t)
     except:
         print("Failed to write !")
 
@@ -122,3 +150,7 @@ def read_delta(ch=0):
     Dx=read_scalar(path+'Dx.txt',ch)
     Dy=read_scalar(path+'Dy.txt',ch)
     return Dx,Dy
+
+
+
+# read_all_scalar()

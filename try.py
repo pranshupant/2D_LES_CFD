@@ -16,6 +16,7 @@ def transport(T,u,v,dt,dx,dy,alpha):
     ny = T.shape[1]-1
 
     T_ = np.zeros(T.shape)
+    T_[:,:] = T[:,:]
     def RHS(alpha,T,dx,dy,i,j):
         rx_top=dx[(i,j)]-dx[(i-1,j)]
         rx_bot=dx[(i,j)]+dx[(i-1,j)]
@@ -25,25 +26,97 @@ def transport(T,u,v,dt,dx,dy,alpha):
         ry_bot=dy[(i,j)]+dy[(i,j-1)]
         ry = ry_top/ry_bot
 
-        T2_x=((1+rx)*T[(i+1,j)]-2*T[(i,j)]+(1-rx)*T[(i-1,j)])/((dx[(i,j)]**2+dx[(i-1,j)]**2)/2)
-        T2_y=((1+ry)*T[(i,j+1)]-2*T[(i,j)]+(1-ry)*T[(i,j-1)])/((dy[(i,j)]**2+dy[(i,j-1)]**2)/2)
+        T2_x=(((1+rx)*T[(i+1,j)])-(2*T[(i,j)])+((1-rx)*T[(i-1,j)]))/((dx[(i,j)]**2+dx[(i-1,j)]**2)/2)
+        T2_y=(((1+ry)*T[(i,j+1)])-(2*T[(i,j)])+((1-ry)*T[(i,j-1)]))/((dy[(i,j)]**2+dy[(i,j-1)]**2)/2)
 
-        rhs=alpha*(T2_x+T2_y)
+        rhs=alpha*(T2_x + T2_y)
 
         return rhs
 
+    # def Der_1(u,v,T,dx,dy,i,j):
+    #     # duTdx=((u[(i,j)]*(T[(i+1,j)]+T[(i,j)]))-(u[(i-1,j)]*(T[(i,j)]+T[(i-1,j)])))/dx[(i,j)]/2
+    #     # dvTdy=((v[(i,j)]*(T[(i,j+1)]+T[(i,j)]))-(v[(i,j-1)]*(T[(i,j)]+T[(i,j-1)])))/dy[(i,j)]/2
+
+    #     duTdx = 0.
+    #     dvTdy = 0.
+
+    #     return duTdx, dvTdy
+
+    # def Der_1(u,v,T,dx,dy,i,j):
+
+    #     x_1 = dx[(i,j)] 
+    #     x_0 = dx[(i-1,j)]
+
+    #     y_1 = dy[(i,j)] 
+    #     y_0 = dy[(i,j-1)]
+
+    #     duTdx = (x_0 + x_1)**(-1)*(0.5*(u[i+1,j] + u[i,j]))*(T[i+1,j]-T[i-1,j])
+    #     dvTdy = (y_0 + y_1)**(-1)*(0.5*(v[i,j+1] + v[i,j]))*(T[i,j+1]-T[i,j-1])
+
+    #     return duTdx, dvTdy
+
+    # for i in range(1,nx):
+    #     for j in range(1,ny):
+    #         rhs = RHS(alpha,T,dx,dy,i,j)
+    #         duTdx,dvTdy=Der_1(u,v,T,dx,dy,i,j)
+    #         T_[(i,j)]=T[(i,j)]+(dt*(rhs-duTdx-dvTdy))
+    # return T_
+
     def Der_1(u,v,T,dx,dy,i,j):
-        duTdx=(u[(i,j)]*(T[(i+1,j)]+T[(i,j)])-u[(i-1,j)]*(T[(i,j)]+T[(i-1,j)]))/dx[(i,j)]/2
-        dvTdy=(v[(i,j)]*(T[(i,j+1)]+T[(i,j)])-v[(i,j-1)]*(T[(i,j)]+T[(i,j-1)]))/dy[(i,j)]/2
+
+        x_1 = dx[(i,j)] 
+        x_0 = dx[(i-1,j)]
+
+        y_1 = dy[(i,j)] 
+        y_0 = dy[(i,j-1)]
+
+        duTdx = (x_0+x_1)**(-1)*(0.5*(u[i,j] + u[i-1,j]))*(T[i+1,j]-T[i-1,j])
+        dvTdy = (y_0+y_1)**(-1)*(0.5*(v[i,j] + v[i,j-1]))*(T[i,j+1]-T[i,j-1])
+
+        #duTdx = 0
+        #dvTdy = 0
 
         return duTdx, dvTdy
 
+    # def Der_1(u,v,T,dx,dy,i,j):
+
+    #     x_1 = dx[(i,j)] 
+    #     x_0 = dx[(i-1,j)]
+
+    #     y_1 = dy[(i,j)] 
+    #     y_0 = dy[(i,j-1)]
+
+    #     duTdx = (x_1)**(-1)*((u[i,j])*(T[i+1,j]-T[i,j]))
+    #     #print(duTdx)
+    #     dvTdy = (y_1)**(-1)*((v[i,j])*(T[i,j+1]-T[i,j]))
+
+    #     #duTdx = 0
+    #     #dvTdy = 0
+
+    #     return duTdx, dvTdy
+
     for i in range(1,nx):
         for j in range(1,ny):
+            if i == 10 and j == 10:
+                Q = 0
+            else:
+                Q = 0
             rhs = RHS(alpha,T,dx,dy,i,j)
             duTdx,dvTdy=Der_1(u,v,T,dx,dy,i,j)
-            T_[(i,j)]=T[(i,j)]+dt*(rhs-duTdx-dvTdy)
+            T_[(i,j)]=T[(i,j)]+(dt*(rhs-duTdx-dvTdy + Q))
     return T_
+
+#*************************************************************
+#         if k<2:
+#             err = np.max((P_-temp))
+#             err1 = err
+#             print(err)
+#         if k > 2:
+#             err = np.max(np.abs(P_-temp))/err1
+            
+#         P = P_
+#     print(k)
+#     return P_
 
 @jit(nopython=True)
 def poisson(P,u,v,dt,dx,dy,rho):
@@ -75,12 +148,13 @@ def poisson(P,u,v,dt,dx,dy,rho):
         rhs=rho/dt*(U_+V_)
         return rhs
 
-    Con = 1e-6
+    Con = 1e-3
     err = 1
     k = 0
+    temp=np.zeros(P.shape)
     while (err>Con):
-        # temp = copy.deepcopy(P)
-        temp=P
+        temp[:,:] = P[:,:]#copy.deepcopy(P)
+        #temp=P
         k+=1
         for i in range(1,nx):
             for j in range(1,ny):
@@ -92,6 +166,8 @@ def poisson(P,u,v,dt,dx,dy,rho):
             print('not converged', err)
             break
         err = np.max(np.abs(P-temp))
+        # print(err)
+    #print(k)
     return P
 
 @jit(nopython=True)
@@ -154,8 +230,8 @@ def predictor(x, y, u, v, T, dt, T_ref, rho, g, nu, beta):
     # u_ = copy.deepcopy(u)
     # v_ = copy.deepcopy(v)
 
-    u_=u
-    v_=v
+    u_[:,:]= u[:,:]
+    v_[:,:]= v[:,:]
     #print('*******')
     #print(nx, ny)
 
@@ -181,9 +257,8 @@ def corrector(x, y, u, v, p, dt, rho):
 
     # u_ = copy.deepcopy(u)
     # v_ = copy.deepcopy(v)
-
-    u_=u
-    v_=v
+    u_[:,:]= u[:,:]
+    v_[:,:]= v[:,:]
 
     for i in range(1, nx-1):
         for j in range(1, ny-1):
@@ -193,13 +268,13 @@ def corrector(x, y, u, v, p, dt, rho):
             y_1 = y[(i,j)] 
             y_0 = y[(i,j-1)]
 
-            u_[i][j] = u[i][j] - (dt/rho)*(p[i+1][j] - p[i][j])/(x_1 + x_0)
-            v_[i][j] = v[i][j] - (dt/rho)*(p[i][j+1] - p[i][j])/(y_1 + y_0)
+            u_[i][j] = u[i][j] - (dt/rho)*(p[i+1][j] - p[i][j])/(x_1)#(x_1 + x_0)
+            v_[i][j] = v[i][j] - (dt/rho)*(p[i][j+1] - p[i][j])/(y_1)#(y_1 + y_0)
     
     return u_, v_
 
 # @jit(nopython=True)
-def BC_update(u, v, p, T):
+def BC_update(u, v, p, T, phi):
     nx = p.shape[0]-1
     ny = p.shape[1]-1
     #inlet
@@ -208,6 +283,7 @@ def BC_update(u, v, p, T):
 
     p[0,:] = copy.deepcopy(p[1,:])
     T[0,:] = copy.deepcopy(T[1,:])
+    phi[0,:] = copy.deepcopy(phi[1,:])
 
     #bottom
     u[:,0] =  copy.deepcopy(-u[:,1])
@@ -216,6 +292,7 @@ def BC_update(u, v, p, T):
 
     p[:,0] = copy.deepcopy(p[:,1])
     T[:,0] = copy.deepcopy(T[:,1])
+    phi[:,0] = copy.deepcopy(phi[:,1])
 
     #outlet
     u[nx-1,:] = copy.deepcopy(u[nx-2,:])
@@ -224,6 +301,7 @@ def BC_update(u, v, p, T):
     v[nx,:] = copy.deepcopy(v[nx-1,:])
     p[nx-1,:] = copy.deepcopy(p[nx,:])
     T[nx,:] = copy.deepcopy(T[nx-1,:])
+    phi[nx,:] = copy.deepcopy(phi[nx-1,:])
 
     #top
     u[:,ny] =  copy.deepcopy(u[:,ny-1])
@@ -239,13 +317,13 @@ def BC_update(u, v, p, T):
 
     p[:,ny] = copy.deepcopy(p[:,ny-1])
     T[:,ny] = copy.deepcopy(T[:,ny-1])
+    phi[:,ny] = copy.deepcopy(phi[:,ny-1])
 
     
-    T[20,5] = 325
+    T[50,25] = 350
+    phi[50,25] = 5
 
-    return u, v, p, T
-
-
+    return u, v, p, T, phi
 
 #@numba.jit(nopython=True, parallel=True)
 def main():
@@ -255,24 +333,28 @@ def main():
     nu = 1.569e-3
     alpha_T = 2.239e-5
     alpha_pollutant = 2.239e-5
-    total_t = 1
-    t = 0
+    total_t = 2
+    t = 0.
     dt = 0.0001
+    dx = 0.005
     g = 9.81
+    cfl = 0.5
 
     initialize()
 
     x,y = read_delta(0)
-    P, T, u, v = read_all_scalar(0)
+    P, T, u, v, phi = read_all_scalar(0)
     print(P.shape) 
     #print(T.shape[0], T.shape[1])
 
     running = True
     while running:
-        if int(t/dt)%1000==0:
+        if int(t/dt)%10==0:
             print('\ntime=%.3f'%t)
-            #if t!=0:
-            write_all_scalar(P, T, u, v, t)
+            
+            if t!=0:
+                print('V',V)
+                write_all_scalar(P, T, u, v, phi, t)
             # sys.exit()
         t1=time.time()
         
@@ -286,25 +368,33 @@ def main():
         u_new, v_new = corrector(x, y, u_, v_, p_new, dt, rho)
         t1=timer(t1)
         #print(u_new)
-        T_new = transport(T,u_new,v_new,dt,x,y,alpha_T)
+        T_new = transport(T,u,v,dt,x,y,alpha_T)
         #T_new = np.zeros(T.shape)
         #print(T_new)
-        #phi_new = transport(phi,u,v,dt,x,y,alpha_pollutant) #Pollutant Transport
+        phi_new = transport(phi,u,v,dt,x,y,alpha_pollutant) #Pollutant Transport
 
-        u_new, v_new, p_new, T_new = copy.deepcopy(BC_update(u_new, v_new, p_new, T_new))
+        u_new, v_new, p_new, T_new, phi_new = copy.deepcopy(BC_update(u_new, v_new, p_new, T_new, phi_new))
         
         u = copy.deepcopy(u_new)
         v = copy.deepcopy(v_new)
 
         P = copy.deepcopy(p_new)
         T = copy.deepcopy(T_new)
+        phi = copy.deepcopy(phi_new)
 
+        u_max =np.max(abs(u))
+        v_max = np.max(abs(v))
+        V = np.sqrt(u_max**2 + v_max**2)
+        # print('V',V)
+        dt = (cfl*dx)/V
+        # print(dt)
         t += dt
+
         #sys.exit()
         # write_all_scalar(P, T, u_new, v_new, t)
         
         if t >= total_t:
-            write_all_scalar(P, T, u_new, v_new, t)
+            write_all_scalar(P, T, u_new, v_new, phi, t)
             running = False
     Contour('U',grid='yes')
     Contour('V',grid='yes')

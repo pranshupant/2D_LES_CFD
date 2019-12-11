@@ -42,7 +42,7 @@ def Animation(Scalar_name,grid='no'):
             counts.append(float(i)) 
     counts.sort()
     for i in counts:
-        times.append('Results/'+'%.3e'%i)
+        times.append('Results/'+'%.6f'%i)
 
     # times.append('Results/'+i)
         
@@ -127,6 +127,6 @@ def Animation(Scalar_name,grid='no'):
     anim.save('%s.gif'%Scalar_name,savefig_kwargs=save) 
     plt.close()
 
-# Animation('P','yes')
-# Animation('U','yes')
+#Animation('P','yes')
+#Animation('U','yes')
 #Animation('T','yes')
