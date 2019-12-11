@@ -338,18 +338,18 @@ def Building_BC(u, v, p, T, phi, Dim=[10,20,10]):
 
    
     #top
-    u[k+1:k_,r] = -u[k+1:k_,r+1]
-    v[k+1:k_,r] = 0.
-    p[k+1:k_,r] = p[k+1:k_,r+1]
-    T[k+1:k_,r] = T[k+1:k_,r+1]
-    phi[k+1:k_,r] = phi[k+1:k_,r+1]
+    u[k+1:k_,r-1] = -u[k+1:k_,r]
+    v[k+1:k_,r-1] = 0.
+    p[k+1:k_,r-1] = p[k+1:k_,r]
+    T[k+1:k_,r-1] = T[k+1:k_,r]
+    phi[k+1:k_,r-1] = phi[k+1:k_,r]
     
     #right
     u[k_,:r] = 0.
     v[k_,:r] = -v[k_+1,:r]
-    p[k_,:r] = p[k+1,:r]
-    T[k_,:r] = T[k+1,:r]
-    phi[k_,:r] = phi[k+1,:r]
+    p[k_,:r] = p[k_+1,:r]
+    T[k_,:r] = T[k_+1,:r]
+    phi[k_,:r] = phi[k_+1,:r]
     
     #inside
     u[k+1:k_,:r-1] = 0.
