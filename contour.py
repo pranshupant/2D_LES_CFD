@@ -250,7 +250,7 @@ def Grid_plot(show='no'):
 # Contour('U',grid='yes')
 
 #Contour('V',grid='yes')
-Contour('phi',grid='yes')
+# Contour('phi',grid='yes')
 #Contour('T',grid='yes')
 # Contour('V',P='yes')
 

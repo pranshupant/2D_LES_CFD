@@ -325,7 +325,8 @@ def BC_update(u, v, p, T, phi):
 
     return u, v, p, T, phi
 
-def Building_BC(u, v, p, T, phi, k=10, k_=20, r=10):
+def Building_BC(u, v, p, T, phi, Dim=[10,20,10]):
+    k, k_, r = Dim
     nx = p.shape[0]-1
     ny = p.shape[1]-1
     #left
@@ -410,6 +411,8 @@ def main():
 
         u_new, v_new, p_new, T_new, phi_new = copy.deepcopy(BC_update(u_new, v_new, p_new, T_new, phi_new))
         
+        u_new, v_new, p_new, T_new, phi_new = copy.deepcopy(Building_BC(u_new, v_new, p_new, T_new, phi_new,[40,50,20]))
+        
         u = copy.deepcopy(u_new)
         v = copy.deepcopy(v_new)
 
@@ -434,9 +437,12 @@ def main():
     Contour('U',grid='yes')
     Contour('V',grid='yes')
     Contour('P',grid='yes')
+
     Streamlines('U','V',grid='yes')
 
-    Contour('T')
+    Contour('T',grid='yes')
+    Contour('phi',grid='yes')
+
     # print(u)
 
 
