@@ -19,7 +19,7 @@ be taken into account.
 ## Setup
 
  - ### Computational Domain and Boundary Conditions
-![](ImagesBCs.png)
+![](Images/BCs.png)
 
  - ### Mesh for the Simulation
 ![](Images/mesh.png)
@@ -38,7 +38,6 @@ be taken into account.
 
 ```
     python3 main.py
-
 ```
 
 **NOTE -** The constants for the simulation can be adjusted in the main.py and initialize.py files
