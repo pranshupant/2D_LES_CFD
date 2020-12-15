@@ -19,16 +19,26 @@ be taken into account.
 ## Setup
 
  - ### Computational Domain and Boundary Conditions
-![](BCs.png)
+![](ImagesBCs.png)
 
  - ### Mesh for the Simulation
-![](mesh.png)
+![](Images/mesh.png)
 
 
 ## Results
 
   - ### Flow of pollutant around City
-![](phi.gif)
+![](Images/phi.gif)
 
   - ### Heat flow around City
-![](T.gif)
+![](Images/T.gif)
+
+
+## Steps to Run Solver
+
+```
+    python3 main.py
+
+```
+
+**NOTE -** The constants for the simulation can be adjusted in the main.py and initialize.py files
