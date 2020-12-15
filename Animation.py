@@ -41,9 +41,13 @@ def Animation(Scalar_name,grid='no'):
         if isfloat(i):
             counts.append(float(i)) 
     counts.sort()
+    k=0
     for i in counts:
-        times.append('Results/'+'%.6f'%i)
-
+        if k%10==0:
+            times.append('Results/'+'%.6f'%i)
+        
+            # break
+        k+=1
     # times.append('Results/'+i)
         
 
@@ -97,36 +101,50 @@ def Animation(Scalar_name,grid='no'):
     # sys.exit()
 
     fig = plt.figure() 
-
-    ax = plt.axes(xlim=(0,4), ylim=(0,1)) 
+    xmin,xmax=min(Points[0][:,0]),max(Points[0][:,0])
+    ymin,ymax=np.min(Points[1][0,:]),np.max(Points[1][0,:])
+    
+    ax = plt.axes(xlim=(xmin,xmax), ylim=(ymin,ymax)) 
 
     #contour_opts = {'levels': np.linspace(-9, 9, 10),
                     # 'cmap':'RdBu', 'lw': 2}
 
     Scalar,Point=gridder(Scalars[0],Points,grid)
-    cax=ax.contourf(Point[0],Point[1],Scalar,cmap='coolwarm',vmin=np.min(Scalars),vmax=np.max(Scalars))
+    # cax=ax.contourf(Point[0],Point[1],Scalar,cmap='coolwarm',vmin=np.min(Scalars),vmax=np.max(Scalars))
+    cmapp='gist_yarg'
+    cmapp='hot'
+
+    cax=ax.contourf(Point[0],Point[1],Scalar,100,cmap=cmapp,vmin=np.min(Scalars),vmax=np.max(Scalars))
 
     def animate(i): 
         ax.collections=[]
         #cbar=[],cax=[]
         Scalar,Point=gridder(Scalars[i+1],Points,grid)
         plt.gca().set_aspect('equal')
-        cax=ax.contourf(Point[0], Point[1], Scalar,cmap='coolwarm',vmin=np.min(Scalars),vmax=np.max(Scalars))#, **contour_opts)
+        print(i)
+        cax=ax.contourf(Point[0], Point[1],Scalar,100,cmap=cmapp,vmin=np.min(Scalars),vmax=np.max(Scalars))#, **contour_opts)
 
 
     anim = animation.FuncAnimation(fig, animate,frames=len(times)-1, interval=1) 
 
-    cbar   = fig.colorbar(cax,orientation='horizontal')
+    # cbar   = fig.colorbar(cax,orientation='horizontal')
 
 
-    # plt.draw()
-    # plt.show()
+    plt.draw()
+    plt.show()
 
     save={'bbox_inches=':'tight'}
 
-    anim.save('%s.gif'%Scalar_name,savefig_kwargs=save) 
+    # anim.save('%s.gif'%Scalar_name,savefig_kwargs=save,dpi=600) 
+    #anim.save('%s.mp4'%Scalar_name,fps=10) 
+
     plt.close()
 
-#Animation('P','yes')
-#Animation('U','yes')
+
+
+# plt.figure(figsize=(10,10))
 #Animation('T','yes')
+# Animation('U','yes')
+Animation('phi','yes')
+
+# Animation('T','yes')

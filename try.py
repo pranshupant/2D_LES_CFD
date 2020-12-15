@@ -70,8 +70,18 @@ def transport(T,u,v,dt,dx,dy,alpha):
         y_1 = dy[(i,j)] 
         y_0 = dy[(i,j-1)]
 
-        duTdx = (x_0+x_1)**(-1)*(0.5*(u[i,j] + u[i-1,j]))*(T[i+1,j]-T[i-1,j])
-        dvTdy = (y_0+y_1)**(-1)*(0.5*(v[i,j] + v[i,j-1]))*(T[i,j+1]-T[i,j-1])
+        U = (0.5*(u[i,j] + u[i-1,j]))
+        V = (0.5*(v[i,j] + v[i,j-1]))
+
+        if U > 0:
+            duTdx = (x_0+x_1)**(-1)*U*(T[i,j]-T[i-1,j])
+        else:
+            duTdx = (x_0+x_1)**(-1)*U*(T[i+1,j]-T[i,j])
+
+        if V > 0:
+            dvTdy = (y_0+y_1)**(-1)*V*(T[i,j]-T[i,j-1])
+        else:
+            dvTdy = (y_0+y_1)**(-1)*V*(T[i,j+1]-T[i,j])
 
         #duTdx = 0
         #dvTdy = 0
@@ -241,7 +251,7 @@ def predictor(x, y, u, v, T, dt, T_ref, rho, g, nu, beta):
             #print(i,j)
             u_[i][j] = u[i][j] + dt*(nu*(Diff(u, x, y, i, j)) - Adv(u, v, x, y, i, j, 0))
 
-            v_[i][j] = v[i][j] + dt*(nu*(Diff(v, x, y, i, j)) - Adv(u, v, x, y, i, j, 1))#+ rho*g*beta*(0.5*(T[i][j-1] + T[i][j+1])-T_ref)) #Add Bousinessq Terms  
+            v_[i][j] = v[i][j] + dt*(nu*(Diff(v, x, y, i, j)) - Adv(u, v, x, y, i, j, 1)+ rho*g*beta*(0.5*(T[i][j+1] + T[i][j])-T_ref)) #Add Bousinessq Terms  
     
     return u_, v_
 
@@ -320,13 +330,13 @@ def BC_update(u, v, p, T, phi):
     phi[:,ny] = phi[:,ny-1]
 
     
-    T[50,25] = 350
-    phi[50,25] = 5
+    T[30:32,20:22] = 350
+    phi[30:32,20:22] = 5
 
     return u, v, p, T, phi
 
 @jit(nopython=True)
-def Building_BC(u, v, p, T, phi, Dim=[10,20,10]):
+def Building_BC(u, v, p, T, phi, Dim):
     k, k_, r = Dim
     nx = p.shape[0]-1
     ny = p.shape[1]-1
@@ -412,7 +422,7 @@ def main():
 
         u_new, v_new, p_new, T_new, phi_new = copy.deepcopy(BC_update(u_new, v_new, p_new, T_new, phi_new))
         
-        u_new, v_new, p_new, T_new, phi_new = copy.deepcopy(Building_BC(u_new, v_new, p_new, T_new, phi_new,[40,50,10]))
+        u_new, v_new, p_new, T_new, phi_new = copy.deepcopy(Building_BC(u_new, v_new, p_new, T_new, phi_new,[100,110,10]))
         
         u = copy.deepcopy(u_new)
         v = copy.deepcopy(v_new)

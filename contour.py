@@ -65,7 +65,11 @@ def Point_average(Points):
 
 
 def plotting(Points,Scalar,Scalar_name,show='yes',P='no'):
-    plt.contourf(Points[0],Points[1],Scalar,10,cmap='coolwarm')
+    if Scalar_name=='T':
+        plt.contourf(Points[0],Points[1],Scalar,200,cmap='coolwarm',vmin=300,vmax=350)
+    else:
+        plt.contourf(Points[0],Points[1],Scalar,250,cmap='coolwarm')
+    
     plt.title('Contour of '+Scalar_name)
     plt.colorbar(orientation='horizontal')
     plt.gca().set_aspect('equal') 
@@ -150,12 +154,18 @@ def Streamlines(U_name,V_name,time=-1,show='yes',grid='no'):
     lw=1*speed**0.3/np.max(speed)
     
     plt.title('Streamlines')
-    plt.gca().set_aspect('equal') 
+    #plt.gca().set_aspect('equal') 
+    print(Points[0][:,0],Points[1][0,:])
+    print(Points.shape)
+    print(U.shape)
+    print(V.shape)
+    np.savetxt('temp.txt',U,fmt='%0.3f')
+    stpoints=np.array([[1,1,1,1,1,1,1,1],[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8]])#np.array([Points[0,0,:],Points[1,0,:]])
     # plt.streamplot(Points[0][:,0],Points[1][0,:], U, V, color=speed,linewidth=lw, cmap='Spectral',density=4)#,minlength=dx/10)
-    plt.streamplot(Points[0][:,0],Points[1][0,:], U.T, V.T, color=speed,linewidth=lw, cmap='coolwarm',density=4)#,minlength=dx/10)
-    plt.colorbar(orientation='horizontal')
+    plt.streamplot(Points[0][:,0],Points[1][0,:], U.T, V.T, color=speed,linewidth=lw, cmap='coolwarm',density=5)#,minlength=dx/10)
+    # plt.colorbar(orientation='horizontal')
     xmin,xmax=min(Points[0][:,0]),max(Points[0][:,0])
-    ymin,ymax=min(Points[1][0,:]),max(Points[1][0,:])
+    ymin,ymax=np.min(Points[1][0,:]),np.max(Points[1][0,:])
     plt.xlim([xmin,xmax])
     plt.ylim([ymin,ymax])
     plt.show()    
@@ -190,6 +200,7 @@ def Quiver(U_name,V_name,time=-1,show='yes',grid='no'):
     
     plt.title('Streamlines')
     plt.gca().set_aspect('equal') 
+
     # print(Points[0][:,0].shape)
     # print(Points[1][0,:].shape)
     # sys.exit()
@@ -246,15 +257,17 @@ def Grid_plot(show='no'):
 # Grid_plot()
 # Contour('U','0',P='yes')
 
-# Contour('U',grid='yes')
+#Contour('V','0.026888',grid='yes')
 # Contour('U',grid='yes')
 
-#Contour('V',grid='yes')
+# Contour('V',grid='yes')
 # Contour('phi',grid='yes')
-#Contour('T',grid='yes')
+# Contour('T',grid='yes')
+# Contour('phi',grid='yes')
+
 # Contour('V',P='yes')
 
 # Streamlines('U','V',grid='yes')
-# Streamlines('U','V')
+#Streamlines('U','V',grid='yes')
 
 # Quiver('U','V','0',grid='yes')

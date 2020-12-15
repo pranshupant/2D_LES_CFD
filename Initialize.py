@@ -42,16 +42,18 @@ def initialize():
 
     Cons='Constant/'
     Rho=1.225
-    N=100
-    M=50
+    N=1600
+    M=200
     nx=N+1
     ny=M+1
-    xmax=1
-    ymax=0.5
+    xmax=2
+    ymax=0.25
     atm=1
     Temperature=300
 
-    dyf=0.01
+    dyf=0.00025
+
+
 
     x=np.linspace(0,xmax,nx)
     y=np.linspace(0,ymax,ny)
@@ -97,7 +99,7 @@ def initialize():
 
     U_in=np.linspace(0,1,ny+1)
     U=np.zeros([nx+1,ny+1])
-    U[0,:]= 2.#*U_in
+    U[0,:]= 1
     # print(U)
     write_scalar('0/U.txt',U)
 
@@ -106,14 +108,14 @@ def initialize():
 
     T=np.ones([nx+1,ny+1])*Temperature # Changed
 
-    T[50,25] = 350
+    T[150:152,100:102] = 375
 
     # print(T)
     write_scalar('0/T.txt',T)
 
     phi = np.zeros([nx+1,ny+1])
 
-    phi[50,25] = 5
+    phi[150:152,100:102] = 40
 
     write_scalar('0/phi.txt',phi)
 
