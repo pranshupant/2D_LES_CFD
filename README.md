@@ -33,11 +33,20 @@ be taken into account.
   - ### Heat flow around City
 ![](Images/T.gif)
 
-
+## Installation required!
+ruamel.yaml <br>
+https://pypi.org/project/ruamel.yaml/
+```
+    pip3 install ruamel.yaml
+Or
+    conda install ruamel.yaml
+```
 ## Steps to Run Solver
+<ol>
+<li>Edit config.yml to step up parameters of the simulation.</li>
+<li>Simply run the following command to run the simulation.</li>
+</ol>
 
 ```
     python3 main.py
 ```
-
-**NOTE -** The constants for the simulation can be adjusted in the main.py and initialize.py files
