@@ -1,0 +1,37 @@
+constants:
+    Cons: Constant/
+    rho: 1.225
+    N: 1600
+    M: 200
+    xmax: 2
+    ymax: 0.25
+    atm: 1
+    T_ref: 300
+    beta: 3.333e-3
+    nu: 1.569e-5
+    alpha_T: 2.239e-5
+    alpha_pollutant: 2.239e-5
+    total_t: 10
+    dt: 0.00005
+    dx: 0.00125
+    dyf: 0.00025
+    g: 2.
+    cfl: 0.65
+
+building_1:
+    x_0: 650
+    x_1: 665
+    y_0:  0
+    y_1: 100
+
+building_2:
+    x_0: 700
+    x_1: 715
+    y_0:  0
+    y_1: 105
+
+building_3:
+    x_0: 800
+    x_1: 815
+    y_0:  0
+    y_1: 95

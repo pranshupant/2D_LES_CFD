@@ -4,6 +4,8 @@ from Initialize import *
 from Animation import *
 from contour import *
 import copy
+from ruamel.yaml import YAML
+import sys 
 
 def timer(t1):
     # print(time.time()-t1)
@@ -406,21 +408,28 @@ def Building_BC(u, v, p, T, phi, Dim):
 
 #@numba.jit(nopython=True, parallel=True)
 def main():
-    rho = 1.225
-    T_ref = 300
-    beta = 1./300
-    nu = 1.569e-5
-    alpha_T = 2.239e-5
-    alpha_pollutant = 2.239e-5
-    total_t = 10
-    t = 0.
-    dt = 0.00005
-    dx = 0.00125
-    g = 2.
-    cfl = 0.65
-    ite = 0.
+    yaml = YAML()
+    with open(sys.argv[1]) as file: 
+        v = yaml.load(file)  
+        constant_dict=v["constants"]
 
-    initialize()
+        rho = constant_dict["rho"]
+        T_ref = constant_dict["T_ref"]
+        beta = constant_dict["beta"]
+        nu = constant_dict["nu"]
+        alpha_T = constant_dict["alpha_T"]
+        alpha_pollutant = constant_dict["alpha_pollutant"]
+        total_t = constant_dict["total_t"]
+        dt = constant_dict["dt"]
+        dx = constant_dict["dx"]
+        g = constant_dict["g"]
+        cfl = constant_dict["cfl"]
+    
+        b_1=v['building_1']
+        b_2=v['building_2']
+        b_3=v['building_3']
+
+    initialize(sys.argv[1])
 
     x,y = read_delta(0)
     P, T, u, v, phi = read_all_scalar(0)
@@ -428,6 +437,8 @@ def main():
     #print(T.shape[0], T.shape[1])
 
     running = True
+    t = 0.
+    ite = 0.
     while running:
         ite += 1
         if int(ite)%80==0:
@@ -456,9 +467,9 @@ def main():
 
         u_new, v_new, p_new, T_new, phi_new = copy.deepcopy(BC_update(u_new, v_new, p_new, T_new, phi_new))
         
-        u_new, v_new, p_new, T_new, phi_new = copy.deepcopy(Building_BC(u_new, v_new, p_new, T_new, phi_new,[650,665,100]))
-        u_new, v_new, p_new, T_new, phi_new = copy.deepcopy(Building_BC(u_new, v_new, p_new, T_new, phi_new,[700,715,105]))
-        u_new, v_new, p_new, T_new, phi_new = copy.deepcopy(Building_BC(u_new, v_new, p_new, T_new, phi_new,[800,815,95]))
+        u_new, v_new, p_new, T_new, phi_new = copy.deepcopy(Building_BC(u_new, v_new, p_new, T_new, phi_new,[b_1["x_0"],b_1["x_1"],b_1["y_1"]]))
+        u_new, v_new, p_new, T_new, phi_new = copy.deepcopy(Building_BC(u_new, v_new, p_new, T_new, phi_new,[b_2["x_0"],b_2["x_1"],b_2["y_1"]]))
+        u_new, v_new, p_new, T_new, phi_new = copy.deepcopy(Building_BC(u_new, v_new, p_new, T_new, phi_new,[b_3["x_0"],b_3["x_1"],b_3["y_1"]]))
 
         u = copy.deepcopy(u_new)
         v = copy.deepcopy(v_new)

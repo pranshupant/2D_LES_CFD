@@ -4,6 +4,7 @@ from numba import jit
 import inspect
 import json
 from functions import *
+from ruamel.yaml import YAML
 #blah blah blah
 def isfloat(value):
   try:
@@ -13,7 +14,7 @@ def isfloat(value):
     return False
 # Hello its Me!
 # Hello this is papa and mama
-def initialize():
+def initialize(config_file):
     
     try:
         print('Removing 0 time')
@@ -40,20 +41,22 @@ def initialize():
     except:
         print('Running Code with existing Constants/0')
 
-    Cons='Constant/'
-    Rho=1.225
-    N=1600
-    M=200
+    yaml = YAML()
+    with open(config_file) as file: 
+        v = yaml.load(file)  
+        constant_dict=v['constants']    
+        Cons=constant_dict["Cons"]
+        rho=constant_dict["rho"]
+        N=constant_dict["N"]
+        M=constant_dict["M"]
+        xmax=constant_dict["xmax"]
+        ymax=constant_dict["ymax"]
+        atm=constant_dict["atm"]
+        T_ref=constant_dict["T_ref"]
+        dyf=constant_dict["dyf"]
+
     nx=N+1
     ny=M+1
-    xmax=2
-    ymax=0.25
-    atm=1
-    Temperature=300
-
-    dyf=0.00025
-
-
 
     x=np.linspace(0,xmax,nx)
     y=np.linspace(0,ymax,ny)
@@ -106,7 +109,7 @@ def initialize():
     V=np.zeros([nx+1,ny+1])
     write_scalar('0/V.txt',V)
 
-    T=np.ones([nx+1,ny+1])*Temperature # Changed
+    T=np.ones([nx+1,ny+1])*T_ref # Changed
 
     T[150:152,100:102] = 375
 

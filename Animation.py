@@ -145,6 +145,6 @@ def Animation(Scalar_name,grid='no'):
 # plt.figure(figsize=(10,10))
 #Animation('T','yes')
 # Animation('U','yes')
-Animation('phi','yes')
+# Animation('phi','yes')
 
 # Animation('T','yes')
